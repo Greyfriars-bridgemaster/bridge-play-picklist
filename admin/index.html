@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Play the Hand – manage boards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+:root {
+  --bg: #F5F1E6; --surface: #FFFFFB; --panel: #FBF8EF; --ink: #26261F; --muted: #646355; --line: #D9D0B4;
+  --green: #184A34; --green-ink: #F7F3E8; --gold: #C9A227; --red: #B3261E; --ok: #1F6B45;
+  --warn-bg: #FFF1C9; --warn-ink: #4F3B00;
+  --font-display: 'Fraunces', Cambria, Georgia, serif;
+  --font-body: 'Source Sans 3', Calibri, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #101C16; --surface: #17281F; --panel: #1B2F25; --ink: #EDE8D7; --muted: #A9B1A1; --line: #2F4839;
+    --green: #2C7A55; --green-ink: #F4F0E2; --gold: #D8B545; --red: #FF8A80; --ok: #7CD3A1;
+    --warn-bg: #4A3B0F; --warn-ink: #FFE9A8; color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 17px/1.45 var(--font-body); }
+.wrap { max-width: 900px; margin: 0 auto; padding: 16px; display: grid; gap: 14px; }
+header { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; }
+h1 { font: 700 26px/1.1 var(--font-display); margin: 0; }
+h2 { font: 700 20px/1.2 var(--font-display); margin: 0 0 10px; }
+a { color: var(--green); font-weight: 600; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.btn { min-height: 44px; padding: 0 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; font: 600 16px var(--font-body); cursor: pointer; }
+.btn:hover:not(:disabled) { border-color: var(--gold); }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn.primary { background: var(--green); color: var(--green-ink); border-color: var(--green); }
+.btn.danger { color: var(--red); }
+.btn:focus-visible, input:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+label { display: grid; gap: 4px; font-weight: 600; }
+label > span { font-size: 14px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+input[type=text], input[type=password], input[type=date] { min-height: 44px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); font: 16px var(--font-body); padding: 0 10px; width: 100%; }
+.form { display: grid; gap: 12px; }
+.row2 { display: grid; gap: 12px; grid-template-columns: 1fr 200px; }
+@media (max-width: 640px) { .row2 { grid-template-columns: 1fr; } }
+.file { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.file input { display: none; }
+.file label.btn { display: inline-flex; align-items: center; justify-content: center; font-size: 16px; color: var(--green-ink); text-transform: none; letter-spacing: 0; }
+.hint { color: var(--muted); font-size: 15px; margin: 0; }
+.msg { border-radius: 8px; padding: 10px 14px; font-weight: 600; background: var(--panel); border: 1px solid var(--line); }
+.msg.err { background: var(--warn-bg); color: var(--warn-ink); border-color: var(--gold); }
+.msg.good { color: var(--ok); }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 4px 8px 8px 0; }
+td { padding: 8px 8px 8px 0; border-top: 1px solid var(--line); vertical-align: middle; }
+td.act { white-space: nowrap; text-align: right; }
+td.act .btn { min-height: 40px; padding: 0 12px; font-size: 15px; margin-left: 4px; }
+td input[type=text], td input[type=date] { min-height: 40px; }
+@media (max-width: 640px) {
+  table, thead, tbody, tr, th, td { display: block; }
+  thead { display: none; }
+  tr { border-top: 1px solid var(--line); padding: 8px 0; }
+  td { border: 0; padding: 2px 0; }
+  td.act { text-align: left; }
+  td.act .btn { margin: 6px 6px 0 0; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Manage boards</h1>
+    <span><a href="/">Go to Play the Hand</a> <button class="btn" id="out" type="button" hidden>Sign out</button></span>
+  </header>
+
+  <div id="note" class="msg" hidden role="status"></div>
+
+  <section class="card" id="signin">
+    <h2>Sign in</h2>
+    <form class="form" id="signinForm">
+      <label><span>Maintenance password</span><input type="password" id="pw" autocomplete="current-password" required></label>
+      <div><button class="btn primary" type="submit">Sign in</button></div>
+    </form>
+  </section>
+
+  <div id="main" hidden style="display:grid;gap:14px">
+    <section class="card">
+      <h2>Add a set of boards</h2>
+      <form class="form" id="addForm">
+        <div class="file">
+          <label class="btn primary" for="pbn" tabindex="0" id="pbnLabel">Choose a .pbn file</label>
+          <input type="file" id="pbn" accept=".pbn,.txt,text/plain">
+          <span id="pbnInfo" class="hint">No file chosen.</span>
+        </div>
+        <div class="row2">
+          <label><span>Name shown to students</span><input type="text" id="title" maxlength="100" placeholder="e.g. Strong 2 Bids" required></label>
+          <label><span>Lesson date</span><input type="date" id="date" required></label>
+        </div>
+        <div><button class="btn primary" id="add" type="submit" disabled>Add to the pick list</button></div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Sets on the pick list</h2>
+      <p class="hint" id="empty" hidden>No sets yet. Add one above.</p>
+      <table id="tbl" hidden>
+        <thead><tr><th>Name</th><th>Lesson date</th><th>Boards</th><th></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <p class="hint" style="margin-top:10px">Changes can take up to a minute to reach every student.</p>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var pw = '', sets = [], editing = '', pending = null;
+  try { pw = sessionStorage.getItem('pth-admin') || ''; } catch (e) { pw = ''; }
+
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function fmtDate(iso) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? (+m[3]) + ' ' + MONTHS[+m[2] - 1] + ' ' + m[1] : (iso || ''); }
+  function today() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function note(text, kind) {
+    var n = $('note'); n.textContent = text || ''; n.hidden = !text;
+    n.className = 'msg' + (kind === 'err' ? ' err' : kind === 'good' ? ' good' : '');
+  }
+  function countBoards(t) { return (t.match(/^\s*\[Deal\s+"/gm) || []).length; }
+
+  function api(method, path, body) {
+    var opts = { method: method, cache: 'no-store', headers: { authorization: 'Bearer ' + pw } };
+    if (body) { opts.headers['content-type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    return fetch(path, opts).then(function (r) {
+      return r.text().then(function (t) {
+        var j = null; try { j = JSON.parse(t); } catch (e) { /* not JSON */ }
+        if (r.status === 401) { signOut(); throw new Error('The password was not accepted.'); }
+        if (r.status === 503 || !j) throw new Error('The maintenance service is not switched on yet. See the setup notes in the README.');
+        if (!r.ok) throw new Error(j.error || 'Something went wrong (' + r.status + ').');
+        return j;
+      });
+    }, function () { throw new Error('Could not reach the website. Please check the connection.'); });
+  }
+
+  function showMain(on) { $('signin').hidden = on; $('main').hidden = !on; $('out').hidden = !on; }
+  function signOut() { pw = ''; try { sessionStorage.removeItem('pth-admin'); } catch (e) { /* ignore */ } showMain(false); }
+  function signIn(then) {
+    api('GET', '/api/admin/check').then(function () {
+      try { sessionStorage.setItem('pth-admin', pw); } catch (e) { /* ignore */ }
+      showMain(true); note(''); load();
+    }).catch(function (e) { if (then) note(e.message, 'err'); });
+  }
+
+  function load() {
+    return fetch('/api/sets', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
+      sets = (j.sets || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+      renderRows();
+    }).catch(function () { note('The list could not be loaded. Please try again.', 'err'); });
+  }
+
+  function renderRows() {
+    $('empty').hidden = sets.length > 0; $('tbl').hidden = sets.length === 0;
+    $('rows').innerHTML = sets.map(function (s) {
+      if (s.id === editing) {
+        return '<tr data-id="' + esc(s.id) + '"><td><input type="text" class="et" maxlength="100" value="' + esc(s.title) + '" aria-label="Name"></td>' +
+          '<td><input type="date" class="ed" value="' + esc(s.date) + '" aria-label="Lesson date"></td>' +
+          '<td>' + s.boards + '</td><td class="act"><button class="btn primary" data-a="save" type="button">Save</button>' +
+          '<button class="btn" data-a="cancel" type="button">Cancel</button></td></tr>';
+      }
+      return '<tr data-id="' + esc(s.id) + '"><td><b>' + esc(s.title) + '</b></td><td>' + esc(fmtDate(s.date)) + '</td><td>' + s.boards + '</td>' +
+        '<td class="act"><button class="btn" data-a="edit" type="button">Rename</button>' +
+        '<button class="btn danger" data-a="del" type="button">Delete</button></td></tr>';
+    }).join('');
+  }
+
+  $('rows').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-a]'); if (!b) return;
+    var tr = b.closest('tr'), id = tr.getAttribute('data-id'), a = b.getAttribute('data-a');
+    var s = sets.filter(function (x) { return x.id === id; })[0];
+    if (a === 'edit') { editing = id; renderRows(); }
+    else if (a === 'cancel') { editing = ''; renderRows(); }
+    else if (a === 'save') {
+      var title = tr.querySelector('.et').value, date = tr.querySelector('.ed').value;
+      b.disabled = true;
+      api('PUT', '/api/admin/sets/' + encodeURIComponent(id), { title: title, date: date })
+        .then(function () { editing = ''; note('Saved.', 'good'); return load(); })
+        .catch(function (err) { note(err.message, 'err'); b.disabled = false; });
+    } else if (a === 'del') {
+      if (!window.confirm('Delete “' + s.title + '” (' + fmtDate(s.date) + ')? Students will no longer see these boards.')) return;
+      api('DELETE', '/api/admin/sets/' + encodeURIComponent(id))
+        .then(function () { note('Deleted “' + s.title + '”.', 'good'); return load(); })
+        .catch(function (err) { note(err.message, 'err'); });
+    }
+  });
+
+  /* choosing a file */
+  $('pbnLabel').addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('pbn').click(); } });
+  $('pbn').addEventListener('change', function (e) {
+    var f = e.target.files[0]; pending = null; $('add').disabled = true;
+    if (!f) { $('pbnInfo').textContent = 'No file chosen.'; return; }
+    var rd = new FileReader();
+    rd.onload = function () {
+      var t = String(rd.result), n = countBoards(t);
+      if (!n) { $('pbnInfo').textContent = 'No boards found in “' + f.name + '”. Is it a PBN file?'; return; }
+      pending = { text: t, name: f.name };
+      $('pbnInfo').textContent = '“' + f.name + '”: ' + n + ' board' + (n === 1 ? '' : 's') + ' found.';
+      $('add').disabled = false;
+    };
+    rd.onerror = function () { $('pbnInfo').textContent = 'That file could not be read.'; };
+    rd.readAsText(f);
+  });
+
+  $('addForm').addEventListener('submit', function (e) {
+    e.preventDefault(); if (!pending) return;
+    var title = $('title').value, date = $('date').value;
+    $('add').disabled = true;
+    api('POST', '/api/admin/sets', { title: title, date: date, pbn: pending.text }).then(function (j) {
+      note('Added “' + j.set.title + '” with ' + j.set.boards + ' boards.', 'good');
+      pending = null; $('addForm').reset(); $('date').value = today(); $('pbnInfo').textContent = 'No file chosen.';
+      return load();
+    }).catch(function (err) { note(err.message, 'err'); $('add').disabled = !pending; });
+  });
+
+  $('signinForm').addEventListener('submit', function (e) { e.preventDefault(); pw = $('pw').value; $('pw').value = ''; signIn(true); });
+  $('out').addEventListener('click', function () { signOut(); note('Signed out.'); });
+
+  $('date').value = today();
+  if (pw) signIn(false);
+})();
+</script>
+</body>
+</html>

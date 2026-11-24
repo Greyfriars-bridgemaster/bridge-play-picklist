@@ -1,0 +1,227 @@
+% PBN 2.1
+% EXPORT
+%Content-type: text/x-pbn; charset=ISO-8859-1
+%Creator: BridgeComposer Version 5.118.2
+%Created: Sun Nov 15 17:13:30 2026 +0000
+%BCOptions Center STBorder STShade
+%BidAndCardSpacing Thin
+%BoardsPerPage 1
+%CardTableColors #008000,#ffffff,#aaaaaa
+%DDAFormat 0
+%DefaultPagination 0
+%Font:CardTable "Arial",11,400,0
+%Font:Commentary "Times New Roman",12,400,0
+%Font:Diagram "Times New Roman",12,400,0
+%Font:Event "Times New Roman",12,400,0
+%Font:FixedPitch "Courier New",10,400,0
+%Font:HandRecord "Arial",11,400,0
+%GutterSize 500,500
+%HRTitleDate 2026.11.15
+%HRTitleEvent " Level 0"
+%HRTitleSetID ""
+%HRTitleSetIDPrefix ""
+%HRTitleSite "H93"
+%HtmlClubs entity,"https://bridgecomposer.com/suitimg/c.gif"
+%HtmlDiamonds entity,"https://bridgecomposer.com/suitimg/d.gif"
+%HtmlHearts entity,"https://bridgecomposer.com/suitimg/h.gif"
+%HtmlNavBar 0.75,#cfe2f3
+%HtmlSpades entity,"https://bridgecomposer.com/suitimg/s.gif"
+%Margins 1000,1000,1000,1000
+%PaperSize 1,2159,2794,2
+%ParaIndent 0
+%PipColors #000000,#ff0000,#ff0000,#000000
+%PipFont "Symbol","Symbol",2,0xAA,0xA9,0xA8,0xA7
+%ScoreTableColors #e6e6e6,#000000
+%SectionSpacing 0,0,0
+%SelectedBoard 8
+%ShowBoardLabels 2
+%ShowCardTable 2
+%TSTCustomSortOrder Default
+%TSTReport List
+%TSTReportOrder ByNumber
+%TSTReportShade Yes
+%Translate "Rule of 19/20" "hide"
+[Event ""]
+[Site "H93"]
+[Date "2026.11.15"]
+[Board "1"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "None"]
+[Deal "N:KQJT.Q64.AKQ.K75 A.J872.J754.J982 9876.AK3.862.AQ4 5432.T95.T93.T63"]
+[Scoring ""]
+[Declarer ""]
+[Contract "6NT"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+2NT Pass 6NT Pass
+Pass Pass
+
+[Event ""]
+[Site "H439"]
+[Date "2026.11.15"]
+[Board "2"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "E"]
+[Vulnerable "NS"]
+[Deal "E:AT.A97.AQJ4.KQJT 87.QT654.876.932 K432.J83.KT9.A84 QJ965.K2.532.765"]
+[Scoring ""]
+[Declarer ""]
+[Contract "6NT"]
+[Result ""]
+[BCFlags "1f"]
+[Auction "E"]
+2NT Pass 4NT Pass
+6NT Pass Pass Pass
+
+[Event ""]
+[Site "H463"]
+[Date "2026.11.15"]
+[Board "3"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "S"]
+[Vulnerable "EW"]
+[Deal "S:AKQ.KJ7.A43.A874 987.95.T9765.653 JT3.AQT.KQJ82.K2 6542.86432..QJT9"]
+[Scoring ""]
+[Declarer ""]
+[Contract ""]
+[Result ""]
+[BCFlags "1f"]
+[Auction "S"]
+2NT Pass 7NT Pass
+Pass Pass
+
+[Event " "]
+[Site "H2392"]
+[Date "2026.11.15"]
+[Board "4"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "W"]
+[Vulnerable "All"]
+[Deal "W:KQ8.AJT.KQ72.AKQ JT975.K8.J986.73 A.9432.A543.J962 6432.Q765.T.T854"]
+[Scoring ""]
+[Declarer ""]
+[Contract ""]
+[Result ""]
+[BCFlags "1f"]
+[Auction "W"]
+2C Pass 2D Pass
+2NT Pass 3C Pass
+3D Pass 4NT Pass
+6NT Pass Pass Pass
+
+[Event ""]
+[Site "H2464"]
+[Date "2026.11.15"]
+[Board "5"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "NS"]
+[Deal "N:KQ5.AK2.AKT4.AK6 A743.QT53.J.Q873 62.874.97653.T52 JT98.J96.Q82.J94"]
+[Scoring ""]
+[Declarer ""]
+[Contract ""]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+2C Pass 2D Pass
+3NT Pass Pass Pass
+
+[Event ""]
+[Site "H2666"]
+[Date "2026.11.15"]
+[Board "6"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "E"]
+[Vulnerable "EW"]
+[Deal "E:AK.AK94.Q532.AT4 Q952.T72.J9.Q852 J64.QJ5.T864.J73 T873.863.AK7.K96"]
+[Scoring ""]
+[Declarer ""]
+[Contract ""]
+[Result ""]
+[BCFlags "1f"]
+[Auction "E"]
+2NT Pass 3NT Pass
+Pass Pass
+
+[Event ""]
+[Site "H3334"]
+[Date "2026.11.15"]
+[Board "7"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "S"]
+[Vulnerable "All"]
+[Deal "S:AQJ.AK.KT973.AQ7 7642.J98653.Q.KJ T95.742.J54.8543 K83.QT.A862.T962"]
+[Scoring ""]
+[Declarer ""]
+[Contract ""]
+[Result ""]
+[BCFlags "1f"]
+[Auction "S"]
+2C Pass 2D Pass
+2NT Pass Pass Pass
+
+[Event ""]
+[Site "H3354"]
+[Date "2026.11.15"]
+[Board "8"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "W"]
+[Vulnerable "None"]
+[Deal "W:64.AK5.AKJ2.AKQ5 AJ85.J9632.Q76.J KQ932.74.T954.86 T7.QT8.83.T97432"]
+[Scoring ""]
+[Declarer ""]
+[Contract ""]
+[Result ""]
+[BCFlags "1f"]
+[Auction "W"]
+2C Pass 2D Pass
+2NT Pass 3H Pass
+3S Pass 3NT Pass
+Pass Pass
+
+[Event ""]
+[Site "H3700"]
+[Date "2026.11.15"]
+[Board "9"]
+[West ""]
+[North ""]
+[East ""]
+[South ""]
+[Dealer "N"]
+[Vulnerable "EW"]
+[Deal "N:AK7.A2.KQJ6.AJ75 96542.8743.8.K94 QJT83.Q65.A54.QT .KJT9.T9732.8632"]
+[Scoring ""]
+[Declarer ""]
+[Contract ""]
+[Result ""]
+[BCFlags "1f"]
+[Auction "N"]
+2NT Pass 3H Pass
+3S Pass 4NT Pass
+6S Pass Pass Pass
