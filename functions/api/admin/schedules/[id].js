@@ -1,4 +1,3 @@
-js
 // PUT /api/admin/schedules/<id>  { title?, rows? }  - rename, or replace the whole schedule
 // DELETE /api/admin/schedules/<id>                  - remove a schedule
 import { json, need, readIndex, writeIndex, checkTitle, checkRows, seasonOf, readBody } from '../../../_lib/common.js';
