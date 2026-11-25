@@ -14,7 +14,7 @@
 <div id="site-top"></div>
 <main id="main">
   <h1>Infographics</h1>
-  <p class="lead">Bite-sized summaries of each topic. Each opens as a PDF, which you can read on screen or print and keep beside you at the table.</p>
+  <p class="lead">Bite-sized summaries of each topic. Click a picture, or use Open, to read it as a PDF. Download keeps a copy to print and keep beside you at the table.</p>
 
   <section class="card" aria-labelledby="g-h">
     <h2 id="g-h">Infographics</h2>
@@ -32,16 +32,20 @@
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   var data = null;
+  function lessonOf(g) { return data.lessons.filter(function (x) { return x.id === g.lessonId; })[0]; }
   function show(season) {
     var gs = data.infographics.filter(function (g) { return g.season === season; });
-    var num = function (g) { var l = data.lessons.filter(function (x) { return x.id === g.lessonId; })[0]; var n = l ? parseFloat(l.number) : NaN; return isNaN(n) ? 9999 : n; };
-    gs.sort(function (a, b) { return num(a) - num(b) || (a.title < b.title ? -1 : 1); });
+    var num = function (g) { var l = lessonOf(g), n = l ? parseFloat(l.number) : NaN; return isNaN(n) ? 9999 : n; };
+    var when = function (g) { var l = lessonOf(g); return l && l.date ? l.date : '9999'; };
+    gs.sort(function (a, b) { return (when(a) < when(b) ? -1 : when(a) > when(b) ? 1 : 0) || num(a) - num(b) || (a.title < b.title ? -1 : 1); });
     if (!gs.length) { $('out').innerHTML = '<p>No infographics have been added for this season yet. Please check back soon.</p>'; return; }
-    $('out').innerHTML = '<ul class="list">' + gs.map(function (g) {
-      var l = data.lessons.filter(function (x) { return x.id === g.lessonId; })[0];
-      return '<li><div class="what"><b>' + esc(g.title) + '</b>' + (l ? '<span>From ' + (l.number ? 'Lesson ' + esc(l.number) + ': ' : '') + esc(l.title) + '</span>' : '') +
-        '</div><div class="links"><a class="btn" href="' + esc(g.fileUrl) + '">Open (PDF)</a><a class="btn alt" href="' + esc(g.fileUrl) + '?download=1">Download</a></div></li>';
-    }).join('') + '</ul>';
+    $('out').innerHTML = '<div class="gallery">' + gs.map(function (g) {
+      var l = lessonOf(g), pic = g.thumbUrl
+        ? '<a class="gthumb" href="' + esc(g.fileUrl) + '" aria-label="Open ' + esc(g.title) + ' (PDF)"><img src="' + esc(g.thumbUrl) + '" width="864" height="576" loading="lazy" alt="Preview of ' + esc(g.title) + '"></a>'
+        : '<a class="gthumb empty" href="' + esc(g.fileUrl) + '" aria-label="Open ' + esc(g.title) + ' (PDF)"><b>' + esc(g.title) + '</b><span aria-hidden="true">&spades;&#xFE0E; &hearts;&#xFE0E; &diams;&#xFE0E; &clubs;&#xFE0E;</span></a>';
+      return '<div class="gitem"><h3>' + esc(g.title) + '</h3><p class="from">' + (l ? 'From ' + (l.number ? 'Lesson ' + esc(l.number) + ': ' : '') + esc(l.title) : '') + '</p>' + pic +
+        '<div class="gbtns"><a class="btn" href="' + esc(g.fileUrl) + '">Open</a><a class="btn alt" href="' + esc(g.fileUrl) + '?download=1">Download</a></div></div>';
+    }).join('') + '</div>';
   }
   fetch('/api/catalogue', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
     if (!j || !Array.isArray(j.lessons) || !Array.isArray(j.infographics)) throw new Error('bad');

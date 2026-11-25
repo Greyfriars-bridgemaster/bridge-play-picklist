@@ -62,3 +62,6 @@ Pages link items by `lessonId`. A lesson's own page = lesson + infographics with
 - Columns: Lesson, Date (day/month/year), Module, Description, Teacher (first names only). A row with no lesson number and no date is a note such as "Christmas break".
 - Students see the course whose last lesson has not yet passed (UK date). When the last lesson of one course has passed, the next course is shown automatically. A drop-down appears once more than one course exists, so they can look at any course.
 - `GET /api/schedules` gives `{ today, defaultId, schedules:[{ id, title, season, first, last, count, rows:[{n,date,module,description,teacher}] }] }`.
+
+## Infographic pictures
+Each infographic can have a small picture (864x576 JPEG, stored in KV as `thumb:<id>`, served at `/files/infographics/<id>.jpg`). The admin page makes it in the browser from page 1 of the PDF using the self-hosted pdf.js in `admin/vendor/` (Apache-2.0, licence included). For infographics uploaded before pictures existed, use Admin > Infographics > "Make the pictures".
