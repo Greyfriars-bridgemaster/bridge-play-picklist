@@ -426,7 +426,7 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
     rd.onerror = function () { $('pbnInfo').textContent = 'That file could not be read.'; };
     rd.readAsText(f);
   });
-  $('date').addEventListener('change', function () { var s = seasonOf($('date').value); if (s) { if (allSeasons().indexOf(s) < 0) extra.push(s); $('bSeason').innerHTML = seasonSelect('x', s).replace(/^<select[^>]*>|<\/select>$/g, ''); } });
+  $('date').addEventListener('change', function () { var s = /^20\d\d-/.test($('date').value) ? seasonOf($('date').value) : ''; if (s) { if (allSeasons().indexOf(s) < 0) extra.push(s); $('bSeason').innerHTML = seasonSelect('x', s).replace(/^<select[^>]*>|<\/select>$/g, ''); } });
   $('bSeason').addEventListener('change', function () { if ($('bSeason').value === '__new') { var s = newSeason($('bSeason'), cat.currentSeason); $('bSeason').innerHTML = seasonSelect('x', s).replace(/^<select[^>]*>|<\/select>$/g, ''); } });
   $('addForm').addEventListener('submit', function (e) {
     e.preventDefault(); if (!pbn) return;
@@ -438,14 +438,39 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
   });
 
   /* ------------------------------------------------ lessons and infographics: add one or many PDFs */
+  /* Reads a file name such as "BS 2026 Lesson 1 - 08Sep26 - Opening 1NT and responses weak (1).pdf"
+     into { number: '1', date: '2026-09-08', title: 'Opening 1NT and responses weak' }. Anything it cannot find is left blank. */
+  var MON3 = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+  function pad2(n) { return String(n).length < 2 ? '0' + n : String(n); }
+  function isoDate(y, m, d) {
+    y = +y; m = +m; d = +d; if (y < 100) y += 2000;
+    var t = new Date(Date.UTC(y, m - 1, d));
+    return (y >= 2000 && y <= 2099 && t.getUTCFullYear() === y && t.getUTCMonth() === m - 1 && t.getUTCDate() === d) ? y + '-' + pad2(m) + '-' + pad2(d) : '';
+  }
+  function findDate(s) {
+    var m, iso;
+    if ((m = /(^|[^\d])(\d{4})[-._](\d{1,2})[-._](\d{1,2})(?!\d)/.exec(s)) && (iso = isoDate(m[2], m[3], m[4]))) return { iso: iso, text: m[0].slice(m[1].length) };
+    if ((m = /(^|[^\d])(\d{1,2})[\s._-]*(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s._,'-]*(\d{4}|\d{2})(?!\d)/i.exec(s)) && (iso = isoDate(m[4], MON3.indexOf(m[3].toLowerCase()) + 1, m[2]))) return { iso: iso, text: m[0].slice(m[1].length) };
+    if ((m = /(^|[^\d])(\d{1,2})[-._\/](\d{1,2})[-._\/](\d{4}|\d{2})(?!\d)/.exec(s)) && (iso = isoDate(m[4], m[3], m[2]))) return { iso: iso, text: m[0].slice(m[1].length) };
+    return null;
+  }
   function guess(name) {
-    var base = name.replace(/\.pdf$/i, '').replace(/[_]+/g, ' ').trim();
-    var m = /^(?:lesson[\s._-]*)?(\d{1,3})[\s._:-]+(.+)$/i.exec(base) || /^lesson[\s._-]*(\d{1,3})\s*$/i.exec(base);
-    return m ? { number: m[1], title: (m[2] || base).trim() } : { number: '', title: base };
+    var base = name.replace(/\.pdf$/i, '').replace(/[_]+/g, ' ').replace(/\s+/g, ' ').trim();
+    var rest = base, number = '', date = '', m;
+    var d = findDate(rest); if (d) { date = d.iso; rest = rest.replace(d.text, ' - '); }
+    if ((m = /lesson[\s._#:-]*(\d{1,3})(?!\d)/i.exec(rest))) { number = m[1]; rest = rest.replace(m[0], ' '); }
+    rest = rest.replace(/^\s*bs[\s._-]*20\d\d\s*/i, '');
+    if (!number && (m = /^\s*(\d{1,3})[\s._:-]+(\S.*)$/.exec(rest))) { number = m[1]; rest = m[2]; }
+    var parts = rest.split(/\s*[-–—]\s+|\s+[-–—]\s*/).map(function (x) { return x.replace(/\s*\(\d+\)\s*$/, '').replace(/\s+copy$/i, '').replace(/^[\s:._-]+|[\s:._-]+$/g, '').trim(); })
+      .filter(function (x) { return x && !/^(bs[\s._-]*)?20\d\d$/i.test(x); });
+    var title = parts.join(' - ');
+    if (!title) title = base.replace(/\s*\(\d+\)\s*$/, '').trim();
+    return { number: number, date: date, title: title };
   }
   function addFiles(kind, files) {
     Array.prototype.forEach.call(files, function (f) {
-      var g = guess(f.name), it = { file: f, title: g.title, number: g.number, date: '', season: cat.currentSeason, lessonId: '', status: '' };
+      var g = guess(f.name), it = { file: f, title: g.title, number: g.number, date: kind === 'lessons' ? g.date : '', season: seasonOf(g.date) || cat.currentSeason, lessonId: '', status: '' };
+      if (allSeasons().indexOf(it.season) < 0) extra.push(it.season);
       if (kind === 'infographics' && g.number) {
         var hit = cat.lessons.filter(function (l) { return String(l.number) === g.number && l.season === it.season; });
         if (hit.length === 1) it.lessonId = hit[0].id;
@@ -479,9 +504,17 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
     el.addEventListener('change', function (e) {
       var tr = e.target.closest('tr[data-i]'); if (!tr) return;
       var it = queues[kind][+tr.getAttribute('data-i')];
-      if (e.target.classList.contains('q-season')) { if (e.target.value === '__new') it.season = newSeason(e.target, it.season); else it.season = e.target.value; renderQueue(kind); }
+      if (e.target.classList.contains('q-season')) { if (e.target.value === '__new') it.season = newSeason(e.target, it.season); else it.season = e.target.value; it.seasonTouched = true; renderQueue(kind); }
       else if (e.target.classList.contains('q-lesson')) it.lessonId = e.target.value;
-      else if (e.target.getAttribute('data-f') === 'date' && !it.seasonTouched) { var s = seasonOf(it.date); if (s) { if (allSeasons().indexOf(s) < 0) extra.push(s); it.season = s; renderQueue(kind); } }
+      else if (e.target.getAttribute('data-f') === 'date') {
+        /* Update only the season box, in place: rebuilding the row would wipe the year while it is being typed. */
+        var s = /^20\d\d-/.test(it.date || '') ? seasonOf(it.date) : '';
+        if (s && !it.seasonTouched && s !== it.season) {
+          if (allSeasons().indexOf(s) < 0) extra.push(s);
+          it.season = s;
+          var old = tr.querySelector('.q-season'); if (old) old.outerHTML = seasonSelect('q-season', s);
+        }
+      }
     });
     el.addEventListener('click', function (e) {
       var b = e.target.closest('button'); if (!b) return;
@@ -645,3 +678,4 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
 </script>
 </body>
 </html>
+
