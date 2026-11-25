@@ -1,7 +1,7 @@
 # Play the Hand – pick-list version, with a maintenance page
 
 ## What is in this folder
-- `index.html` – the student page (pick list of lessons).
+- `index.html` – the landing page (four boxes). `play/index.html` – Play the Hand (pick list of lessons). `lessons/`, `infographics/` and `info/` – the other pages the boxes link to.
 - `admin/index.html` – the maintenance page, at `<your address>/admin/`. Password protected. Four tabs: **Boards**, **Lessons**, **Infographics** and **Schedule** (add, edit, replace, delete).
 - `functions/` – the small server-side part (Cloudflare Pages Functions). Do not edit.
 - `boards/` – a plain-file backup list (`index.js` + `.pbn` files). Used only when the maintenance service is not switched on (see below), or when `index.html` is opened by double-click for review. `boards/preview-data.js` is just for that double-click review.
@@ -31,7 +31,7 @@ Open `<address>/admin/`, sign in, choose the .pbn file, type the name students w
 ## Notes
 - Anyone with the password can change the lessons, so share it only with the maintainer. To change it: Cloudflare → the project → Settings → Variables and secrets → edit `ADMIN_PASSWORD`, then redeploy.
 - Lesson links: `<address>/#strong-2-bids` opens that lesson directly (the name in lower case with dashes).
-- Reviewing on your own computer: extract the whole zip, then double-click `index.html`. The admin page needs the website and does not work from a double-click.
+- Reviewing on your own computer: extract the whole zip, then double-click `play/index.html` (Play the Hand). The admin page needs the website and does not work from a double-click.
 
 
 ## Lessons, infographics and seasons
@@ -54,11 +54,11 @@ Pages link items by `lessonId`. A lesson's own page = lesson + infographics with
 
 
 ## Pages
-- `/` Play the Hand. `/info/` General information (course schedule, link to the club's BridgeWebs site). `/privacy/` Privacy, cookies and accessibility. The shared top bar and footer come from `assets/site.js`; the club name and the BridgeWebs address are set once in `assets/site-config.js`.
+- `/` Landing page. `/interactive/` Interactive features (links to Play the Hand and the cue bidding game; the game address is `cueGame` in `assets/site-config.js`). `/play/` Play the Hand. `/lessons/` Teaching materials by lesson (the lesson PDFs, with any linked infographics). `/infographics/` The infographic PDFs. `/info/` General information (course schedule, link to the club's BridgeWebs site). `/privacy/` Privacy, cookies and accessibility. The shared top bar and footer come from `assets/site.js`; the club name, centre address, map link and BridgeWebs address are set once in `assets/site-config.js`.
 - Fonts are served from `fonts/` (no requests to Google). Nothing on the student pages loads from another company's server.
 
 ## The course schedule
-- Admin → **Schedule**. Fill in the pro forma (`admin/schedule-proforma.csv`, also offered as a download on that tab), copy the cells, paste them into the box and press **Read the pasted table**; or choose a saved CSV. Check and correct the table, name the course (e.g. "Spring 2027") and **Save schedule**. **Edit** on a saved course reopens the same table.
+- Admin → **Schedule**. Fill in the pro forma (`admin/schedule-proforma.xlsx`, also offered as a download on that tab), copy the cells, paste them into the box and press **Read the pasted table**; or choose a saved CSV. Check and correct the table, name the course (e.g. "Spring 2027") and **Save schedule**. **Edit** on a saved course reopens the same table.
 - Columns: Lesson, Date (day/month/year), Module, Description, Teacher (first names only). A row with no lesson number and no date is a note such as "Christmas break".
 - Students see the course whose last lesson has not yet passed (UK date). When the last lesson of one course has passed, the next course is shown automatically. A drop-down appears once more than one course exists, so they can look at any course.
 - `GET /api/schedules` gives `{ today, defaultId, schedules:[{ id, title, season, first, last, count, rows:[{n,date,module,description,teacher}] }] }`.
