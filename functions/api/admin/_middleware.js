@@ -11,7 +11,7 @@ async function sameText(a, b) {
 }
 
 export async function onRequest({ request, env, next }) {
-  if (!env.BOARDS || !env.ADMIN_PASSWORD) return json({ error: 'Not set up' }, 503);
+  if (!env.ADMIN_PASSWORD) return json({ error: 'Not set up: ADMIN_PASSWORD' }, 503);
   const given = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
   if (!given || !(await sameText(given, String(env.ADMIN_PASSWORD)))) return json({ error: 'Wrong password' }, 401);
   return next();

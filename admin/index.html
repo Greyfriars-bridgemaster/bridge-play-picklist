@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>Play the Hand – manage boards</title>
+<title>Greyfriars bridge – manage content</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap">
@@ -27,38 +27,46 @@
 [hidden] { display: none !important; }
 html, body { margin: 0; }
 body { background: var(--bg); color: var(--ink); font: 17px/1.45 var(--font-body); }
-.wrap { max-width: 900px; margin: 0 auto; padding: 16px; display: grid; gap: 14px; }
+.wrap { max-width: 1000px; margin: 0 auto; padding: 16px; display: grid; gap: 14px; }
 header { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; }
 h1 { font: 700 26px/1.1 var(--font-display); margin: 0; }
 h2 { font: 700 20px/1.2 var(--font-display); margin: 0 0 10px; }
 a { color: var(--green); font-weight: 600; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
-.btn { min-height: 44px; padding: 0 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; font: 600 16px var(--font-body); cursor: pointer; }
+.btn { min-height: 44px; padding: 0 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; font: 600 16px var(--font-body); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 .btn:hover:not(:disabled) { border-color: var(--gold); }
 .btn:disabled { opacity: .45; cursor: default; }
 .btn.primary { background: var(--green); color: var(--green-ink); border-color: var(--green); }
 .btn.danger { color: var(--red); }
-.btn:focus-visible, input:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
-label { display: grid; gap: 4px; font-weight: 600; }
-label > span { font-size: 14px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
-input[type=text], input[type=password], input[type=date] { min-height: 44px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); font: 16px var(--font-body); padding: 0 10px; width: 100%; }
+.btn.small { min-height: 40px; padding: 0 12px; font-size: 15px; }
+.btn:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+label.f { display: grid; gap: 4px; font-weight: 600; }
+label.f > span { font-size: 14px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+input[type=text], input[type=password], input[type=date], select { min-height: 44px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); font: 16px var(--font-body); padding: 0 10px; width: 100%; max-width: 100%; }
 .form { display: grid; gap: 12px; }
-.row2 { display: grid; gap: 12px; grid-template-columns: 1fr 200px; }
-@media (max-width: 640px) { .row2 { grid-template-columns: 1fr; } }
+.grid { display: grid; gap: 12px; grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
 .file { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.file input { display: none; }
-.file label.btn { display: inline-flex; align-items: center; justify-content: center; font-size: 16px; color: var(--green-ink); text-transform: none; letter-spacing: 0; }
+.file input[type=file] { display: none; }
 .hint { color: var(--muted); font-size: 15px; margin: 0; }
 .msg { border-radius: 8px; padding: 10px 14px; font-weight: 600; background: var(--panel); border: 1px solid var(--line); }
 .msg.err { background: var(--warn-bg); color: var(--warn-ink); border-color: var(--gold); }
 .msg.good { color: var(--ok); }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.tabs button { min-height: 44px; padding: 0 18px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; font: 700 16px var(--font-body); cursor: pointer; }
+.tabs button[aria-pressed="true"] { background: var(--green); color: var(--green-ink); border-color: var(--green); }
+.tabs .sp { flex: 1; }
+.tabs select { width: auto; min-width: 150px; }
 table { width: 100%; border-collapse: collapse; }
 th { text-align: left; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 4px 8px 8px 0; }
 td { padding: 8px 8px 8px 0; border-top: 1px solid var(--line); vertical-align: middle; }
 td.act { white-space: nowrap; text-align: right; }
-td.act .btn { min-height: 40px; padding: 0 12px; font-size: 15px; margin-left: 4px; }
-td input[type=text], td input[type=date] { min-height: 40px; }
-@media (max-width: 640px) {
+td.act .btn { margin-left: 4px; }
+td input[type=text], td input[type=date], td select { min-height: 40px; }
+.muted { color: var(--muted); }
+.st { font-size: 14px; font-weight: 600; }
+.st.err { color: var(--red); } .st.ok { color: var(--ok); }
+@media (max-width: 760px) {
   table, thead, tbody, tr, th, td { display: block; }
   thead { display: none; }
   tr { border-top: 1px solid var(--line); padding: 8px 0; }
@@ -71,7 +79,7 @@ td input[type=text], td input[type=date] { min-height: 40px; }
 <body>
 <div class="wrap">
   <header>
-    <h1>Manage boards</h1>
+    <h1>Manage content</h1>
     <span><a href="/">Go to Play the Hand</a> <button class="btn" id="out" type="button" hidden>Sign out</button></span>
   </header>
 
@@ -80,38 +88,101 @@ td input[type=text], td input[type=date] { min-height: 40px; }
   <section class="card" id="signin">
     <h2>Sign in</h2>
     <form class="form" id="signinForm">
-      <label><span>Maintenance password</span><input type="password" id="pw" autocomplete="current-password" required></label>
+      <label class="f"><span>Maintenance password</span><input type="password" id="pw" autocomplete="current-password" required></label>
       <div><button class="btn primary" type="submit">Sign in</button></div>
     </form>
   </section>
 
   <div id="main" hidden style="display:grid;gap:14px">
-    <section class="card">
-      <h2>Add a set of boards</h2>
-      <form class="form" id="addForm">
-        <div class="file">
-          <label class="btn primary" for="pbn" tabindex="0" id="pbnLabel">Choose a .pbn file</label>
-          <input type="file" id="pbn" accept=".pbn,.txt,text/plain">
-          <span id="pbnInfo" class="hint">No file chosen.</span>
-        </div>
-        <div class="row2">
-          <label><span>Name shown to students</span><input type="text" id="title" maxlength="100" placeholder="e.g. Strong 2 Bids" required></label>
-          <label><span>Lesson date</span><input type="date" id="date" required></label>
-        </div>
-        <div><button class="btn primary" id="add" type="submit" disabled>Add to the pick list</button></div>
-      </form>
-    </section>
+    <div class="tabs" id="tabs">
+      <button type="button" data-tab="sets" aria-pressed="true">Boards</button>
+      <button type="button" data-tab="lessons" aria-pressed="false">Lessons</button>
+      <button type="button" data-tab="infographics" aria-pressed="false">Infographics</button>
+      <span class="sp"></span>
+      <label id="filterWrap" hidden><span class="muted">Show </span><select id="seasonFilter" aria-label="Season"></select></label>
+    </div>
 
-    <section class="card">
-      <h2>Sets on the pick list</h2>
-      <p class="hint" id="empty" hidden>No sets yet. Add one above.</p>
-      <table id="tbl" hidden>
-        <thead><tr><th>Name</th><th>Lesson date</th><th>Boards</th><th></th></tr></thead>
-        <tbody id="rows"></tbody>
-      </table>
-      <p class="hint" style="margin-top:10px">Changes can take up to a minute to reach every student.</p>
-    </section>
+    <!-- BOARDS -->
+    <div id="p-sets" style="display:grid;gap:14px">
+      <section class="card" id="sets-new">
+        <h2>Add a set of boards</h2>
+        <form class="form" id="addForm">
+          <div class="file">
+            <label class="btn primary" for="pbn" tabindex="0" id="pbnLabel">Choose a .pbn file</label>
+            <input type="file" id="pbn" accept=".pbn,.txt,text/plain">
+            <span id="pbnInfo" class="hint">No file chosen.</span>
+          </div>
+          <div class="grid">
+            <label class="f"><span>Name shown to students</span><input type="text" id="title" maxlength="100" placeholder="e.g. Strong 2 Bids" required></label>
+            <label class="f"><span>Lesson date</span><input type="date" id="date" required></label>
+            <label class="f"><span>Season</span><select id="bSeason"></select></label>
+          </div>
+          <label class="f"><span>Linked lesson (optional)</span><select id="bLesson"></select></label>
+          <div><button class="btn primary" id="add" type="submit" disabled>Add to the pick list</button></div>
+        </form>
+      </section>
+      <section class="card">
+        <h2>Sets on the pick list</h2>
+        <p class="hint" id="sets-empty" hidden>No sets yet.</p>
+        <table id="sets-tbl" hidden>
+          <thead><tr><th>Name</th><th>Lesson date</th><th>Season</th><th>Lesson</th><th>Boards</th><th></th></tr></thead>
+          <tbody id="sets-rows"></tbody>
+        </table>
+        <p class="hint" style="margin-top:10px">Changes can take up to a minute to reach every student.</p>
+      </section>
+    </div>
+
+    <!-- LESSONS -->
+    <div id="p-lessons" hidden style="display:grid;gap:14px">
+      <section class="card" id="lessons-setup" hidden>
+        <h2>Lessons are not switched on yet</h2>
+        <p class="hint">In Cloudflare, create a KV store named <b>greyfriars-lessons</b>, attach it to this project with the variable name <b>LESSONS</b>, then redeploy. The README has the steps.</p>
+      </section>
+      <section class="card" id="lessons-new">
+        <h2>Add lesson PDFs</h2>
+        <div class="file">
+          <label class="btn primary" for="lessons-files" tabindex="0" data-pick="lessons-files">Choose PDF file(s)</label>
+          <input type="file" id="lessons-files" accept=".pdf,application/pdf" multiple>
+          <span class="hint">Choose one, or many at once. Check the names and numbers below before uploading.</span>
+        </div>
+        <div id="lessons-queue" style="margin-top:10px"></div>
+      </section>
+      <section class="card">
+        <h2>Lessons</h2>
+        <p class="hint" id="lessons-empty" hidden>No lessons yet.</p>
+        <table id="lessons-tbl" hidden>
+          <thead><tr><th>No.</th><th>Title</th><th>Date</th><th>Season</th><th>Linked</th><th>Size</th><th></th></tr></thead>
+          <tbody id="lessons-rows"></tbody>
+        </table>
+      </section>
+    </div>
+
+    <!-- INFOGRAPHICS -->
+    <div id="p-infographics" hidden style="display:grid;gap:14px">
+      <section class="card" id="infographics-setup" hidden>
+        <h2>Infographics are not switched on yet</h2>
+        <p class="hint">In Cloudflare, create a KV store named <b>greyfriars-infographics</b>, attach it to this project with the variable name <b>INFOGRAPHICS</b>, then redeploy. The README has the steps.</p>
+      </section>
+      <section class="card" id="infographics-new">
+        <h2>Add infographic PDFs</h2>
+        <div class="file">
+          <label class="btn primary" for="infographics-files" tabindex="0" data-pick="infographics-files">Choose PDF file(s)</label>
+          <input type="file" id="infographics-files" accept=".pdf,application/pdf" multiple>
+          <span class="hint">Choose one, or many at once. Link each to a lesson, or leave it unlinked for a general cheat sheet.</span>
+        </div>
+        <div id="infographics-queue" style="margin-top:10px"></div>
+      </section>
+      <section class="card">
+        <h2>Infographics</h2>
+        <p class="hint" id="infographics-empty" hidden>No infographics yet.</p>
+        <table id="infographics-tbl" hidden>
+          <thead><tr><th>Title</th><th>Lesson</th><th>Season</th><th>Size</th><th></th></tr></thead>
+          <tbody id="infographics-rows"></tbody>
+        </table>
+      </section>
+    </div>
   </div>
+  <input type="file" id="replaceFile" accept=".pdf,application/pdf" hidden>
 </div>
 
 <script>
@@ -119,111 +190,288 @@ td input[type=text], td input[type=date] { min-height: 40px; }
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
   var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  var pw = '', sets = [], editing = '', pending = null;
+  var pw = '', cat = null, tab = 'sets', filter = '', editing = null, extra = [], pbn = null, replaceTarget = null;
+  var queues = { lessons: [], infographics: [] };
   try { pw = sessionStorage.getItem('pth-admin') || ''; } catch (e) { pw = ''; }
 
-  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function fmtDate(iso) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? (+m[3]) + ' ' + MONTHS[+m[2] - 1] + ' ' + m[1] : (iso || ''); }
   function today() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
-  function note(text, kind) {
-    var n = $('note'); n.textContent = text || ''; n.hidden = !text;
-    n.className = 'msg' + (kind === 'err' ? ' err' : kind === 'good' ? ' good' : '');
-  }
-  function countBoards(t) { return (t.match(/^\s*\[Deal\s+"/gm) || []).length; }
+  function size(n) { return n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
+  function seasonOf(iso) { var m = /^(\d{4})-(\d{2})/.exec(iso || ''); if (!m) return ''; var s = +m[2] >= 9 ? +m[1] : +m[1] - 1; return s + '/' + String((s + 1) % 100).padStart(2, '0'); }
+  function validSeason(s) { var m = /^(\d{4})\/(\d{2})$/.exec(s || ''); return !!m && (+m[1] + 1) % 100 === +m[2]; }
+  function note(text, kind) { var n = $('note'); n.textContent = text || ''; n.hidden = !text; n.className = 'msg' + (kind === 'err' ? ' err' : kind === 'good' ? ' good' : ''); }
+  function lessonLabel(l) { return (l.number ? 'Lesson ' + l.number + ' – ' : '') + l.title; }
+  function numKey(l) { var n = parseFloat(l.number); return isNaN(n) ? 1e9 : n; }
 
+  /* ------------------------------------------------ talking to the service */
   function api(method, path, body) {
     var opts = { method: method, cache: 'no-store', headers: { authorization: 'Bearer ' + pw } };
-    if (body) { opts.headers['content-type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    if (body instanceof FormData) opts.body = body;
+    else if (body) { opts.headers['content-type'] = 'application/json'; opts.body = JSON.stringify(body); }
     return fetch(path, opts).then(function (r) {
       return r.text().then(function (t) {
         var j = null; try { j = JSON.parse(t); } catch (e) { /* not JSON */ }
         if (r.status === 401) { signOut(); throw new Error('The password was not accepted.'); }
-        if (r.status === 503 || !j) throw new Error('The maintenance service is not switched on yet. See the setup notes in the README.');
+        if (r.status === 503 || !j) throw new Error('That part of the service is not switched on yet. See the setup notes in the README.');
         if (!r.ok) throw new Error(j.error || 'Something went wrong (' + r.status + ').');
         return j;
       });
     }, function () { throw new Error('Could not reach the website. Please check the connection.'); });
   }
-
   function showMain(on) { $('signin').hidden = on; $('main').hidden = !on; $('out').hidden = !on; }
   function signOut() { pw = ''; try { sessionStorage.removeItem('pth-admin'); } catch (e) { /* ignore */ } showMain(false); }
-  function signIn(then) {
+  function signIn(announce) {
     api('GET', '/api/admin/check').then(function () {
       try { sessionStorage.setItem('pth-admin', pw); } catch (e) { /* ignore */ }
       showMain(true); note(''); load();
-    }).catch(function (e) { if (then) note(e.message, 'err'); });
+    }).catch(function (e) { if (announce) note(e.message, 'err'); });
   }
-
   function load() {
-    return fetch('/api/sets', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
-      sets = (j.sets || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
-      renderRows();
-    }).catch(function () { note('The list could not be loaded. Please try again.', 'err'); });
+    return fetch('/api/catalogue', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
+      cat = j; render();
+    }).catch(function () { note('The lists could not be loaded. Please try again.', 'err'); });
   }
 
-  function renderRows() {
-    $('empty').hidden = sets.length > 0; $('tbl').hidden = sets.length === 0;
-    $('rows').innerHTML = sets.map(function (s) {
-      if (s.id === editing) {
-        return '<tr data-id="' + esc(s.id) + '"><td><input type="text" class="et" maxlength="100" value="' + esc(s.title) + '" aria-label="Name"></td>' +
-          '<td><input type="date" class="ed" value="' + esc(s.date) + '" aria-label="Lesson date"></td>' +
-          '<td>' + s.boards + '</td><td class="act"><button class="btn primary" data-a="save" type="button">Save</button>' +
-          '<button class="btn" data-a="cancel" type="button">Cancel</button></td></tr>';
+  /* ------------------------------------------------ seasons and links */
+  function allSeasons() {
+    var s = {}; s[cat.currentSeason] = 1;
+    cat.seasons.forEach(function (x) { s[x] = 1; }); extra.forEach(function (x) { s[x] = 1; });
+    return Object.keys(s).sort().reverse();
+  }
+  function seasonSelect(cls, sel) {
+    return '<select class="' + cls + '" aria-label="Season">' + allSeasons().map(function (s) {
+      return '<option' + (s === sel ? ' selected' : '') + '>' + esc(s) + '</option>';
+    }).join('') + '<option value="__new">Add another season…</option></select>';
+  }
+  function lessonSelect(cls, sel) {
+    var by = {};
+    cat.lessons.forEach(function (l) { (by[l.season] = by[l.season] || []).push(l); });
+    var h = '<select class="' + cls + '" aria-label="Linked lesson"><option value="">(not linked)</option>';
+    Object.keys(by).sort().reverse().forEach(function (s) {
+      h += '<optgroup label="' + esc(s) + '">' + by[s].sort(function (a, b) { return numKey(a) - numKey(b); }).map(function (l) {
+        return '<option value="' + esc(l.id) + '"' + (l.id === sel ? ' selected' : '') + '>' + esc(lessonLabel(l)) + '</option>';
+      }).join('') + '</optgroup>';
+    });
+    return h + '</select>';
+  }
+  function lessonById(id) { return cat.lessons.filter(function (l) { return l.id === id; })[0]; }
+  /* When "Add another season…" is chosen, ask for it, and return the chosen value (or the old one). */
+  function newSeason(sel, previous) {
+    var v = window.prompt('Season, written like 2025/26:', '');
+    if (v && validSeason(v.trim())) { extra.push(v.trim()); return v.trim(); }
+    if (v) note('A season should look like 2026/27 (the second year is the one after the first).', 'err');
+    return previous;
+  }
+  function inSeason(item) { return !filter || item.season === filter; }
+
+  /* ------------------------------------------------ drawing */
+  function render() {
+    var seasons = allSeasons();
+    $('filterWrap').hidden = seasons.length < 2;
+    $('seasonFilter').innerHTML = '<option value="">All seasons</option>' + seasons.map(function (s) { return '<option' + (s === filter ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('');
+    Array.prototype.forEach.call($('tabs').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-tab') === tab)); });
+    ['sets', 'lessons', 'infographics'].forEach(function (t) { $('p-' + t).hidden = t !== tab; });
+    $('bSeason').innerHTML = seasonSelect('x', $('bSeason').value && seasons.indexOf($('bSeason').value) >= 0 ? $('bSeason').value : (seasonOf($('date').value) || cat.currentSeason)).replace(/^<select[^>]*>|<\/select>$/g, '');
+    $('bLesson').innerHTML = lessonSelect('x', $('bLesson').value).replace(/^<select[^>]*>|<\/select>$/g, '');
+    $('lessons-setup').hidden = cat.ready.lessons; $('lessons-new').hidden = !cat.ready.lessons;
+    $('infographics-setup').hidden = cat.ready.infographics; $('infographics-new').hidden = !cat.ready.infographics;
+    renderSets(); renderLessons(); renderInfographics(); renderQueue('lessons'); renderQueue('infographics');
+  }
+  function isEd(kind, id) { return editing && editing.kind === kind && editing.id === id; }
+  function acts(kind, id, extraBtn) {
+    return '<td class="act">' + (extraBtn || '') + '<button class="btn small" data-a="edit" type="button">Edit</button>' +
+      '<button class="btn small danger" data-a="del" type="button">Delete</button></td>';
+  }
+  function editActs() { return '<td class="act"><button class="btn small primary" data-a="save" type="button">Save</button><button class="btn small" data-a="cancel" type="button">Cancel</button></td>'; }
+
+  function renderSets() {
+    var list = cat.sets.filter(inSeason).sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+    $('sets-empty').hidden = list.length > 0; $('sets-tbl').hidden = list.length === 0;
+    $('sets-rows').innerHTML = list.map(function (s) {
+      if (isEd('sets', s.id)) {
+        return '<tr data-kind="sets" data-id="' + esc(s.id) + '"><td><input type="text" class="e-title" maxlength="100" value="' + esc(s.title) + '"></td>' +
+          '<td><input type="date" class="e-date" value="' + esc(s.date) + '"></td><td>' + seasonSelect('e-season', s.season) + '</td><td>' + lessonSelect('e-lesson', s.lessonId) + '</td><td>' + s.boards + '</td>' + editActs() + '</tr>';
       }
-      return '<tr data-id="' + esc(s.id) + '"><td><b>' + esc(s.title) + '</b></td><td>' + esc(fmtDate(s.date)) + '</td><td>' + s.boards + '</td>' +
-        '<td class="act"><button class="btn" data-a="edit" type="button">Rename</button>' +
-        '<button class="btn danger" data-a="del" type="button">Delete</button></td></tr>';
+      var l = s.lessonId && lessonById(s.lessonId);
+      return '<tr data-kind="sets" data-id="' + esc(s.id) + '"><td><b>' + esc(s.title) + '</b></td><td>' + esc(fmtDate(s.date)) + '</td><td>' + esc(s.season) + '</td><td class="muted">' + (l ? esc(lessonLabel(l)) : '–') + '</td><td>' + s.boards + '</td>' + acts() + '</tr>';
+    }).join('');
+  }
+  function renderLessons() {
+    var list = cat.lessons.filter(inSeason).sort(function (a, b) { return a.season < b.season ? 1 : a.season > b.season ? -1 : numKey(a) - numKey(b); });
+    $('lessons-empty').hidden = list.length > 0; $('lessons-tbl').hidden = list.length === 0;
+    $('lessons-rows').innerHTML = list.map(function (l) {
+      if (isEd('lessons', l.id)) {
+        return '<tr data-kind="lessons" data-id="' + esc(l.id) + '"><td><input type="text" class="e-number" maxlength="10" value="' + esc(l.number) + '" style="width:80px"></td>' +
+          '<td><input type="text" class="e-title" maxlength="100" value="' + esc(l.title) + '"></td><td><input type="date" class="e-date" value="' + esc(l.date) + '"></td>' +
+          '<td>' + seasonSelect('e-season', l.season) + '</td><td></td><td>' + size(l.size) + '</td>' + editActs() + '</tr>';
+      }
+      var ni = cat.infographics.filter(function (i) { return i.lessonId === l.id; }).length, nb = cat.sets.filter(function (s) { return s.lessonId === l.id; }).length;
+      var linked = [ni ? ni + ' infographic' + (ni > 1 ? 's' : '') : '', nb ? nb + ' board set' + (nb > 1 ? 's' : '') : ''].filter(Boolean).join(', ') || '–';
+      return '<tr data-kind="lessons" data-id="' + esc(l.id) + '"><td>' + esc(l.number) + '</td><td><b>' + esc(l.title) + '</b></td><td>' + esc(l.date ? fmtDate(l.date) : '') + '</td><td>' + esc(l.season) + '</td><td class="muted">' + esc(linked) + '</td><td class="muted">' + size(l.size) + '</td>' +
+        acts('lessons', l.id, '<a class="btn small" href="' + esc(l.fileUrl) + '" target="_blank" rel="noopener">View</a><button class="btn small" data-a="replace" type="button">Replace file</button>') + '</tr>';
+    }).join('');
+  }
+  function renderInfographics() {
+    var list = cat.infographics.filter(inSeason).sort(function (a, b) { return a.title < b.title ? -1 : 1; });
+    $('infographics-empty').hidden = list.length > 0; $('infographics-tbl').hidden = list.length === 0;
+    $('infographics-rows').innerHTML = list.map(function (i) {
+      if (isEd('infographics', i.id)) {
+        return '<tr data-kind="infographics" data-id="' + esc(i.id) + '"><td><input type="text" class="e-title" maxlength="100" value="' + esc(i.title) + '"></td>' +
+          '<td>' + lessonSelect('e-lesson', i.lessonId) + '</td><td>' + seasonSelect('e-season', i.season) + '</td><td>' + size(i.size) + '</td>' + editActs() + '</tr>';
+      }
+      var l = i.lessonId && lessonById(i.lessonId);
+      return '<tr data-kind="infographics" data-id="' + esc(i.id) + '"><td><b>' + esc(i.title) + '</b></td><td class="muted">' + (l ? esc(lessonLabel(l)) : '–') + '</td><td>' + esc(i.season) + '</td><td class="muted">' + size(i.size) + '</td>' +
+        acts('infographics', i.id, '<a class="btn small" href="' + esc(i.fileUrl) + '" target="_blank" rel="noopener">View</a><button class="btn small" data-a="replace" type="button">Replace file</button>') + '</tr>';
     }).join('');
   }
 
-  $('rows').addEventListener('click', function (e) {
+  /* ------------------------------------------------ row actions (edit, save, delete, replace) */
+  var labels = { sets: 'set of boards', lessons: 'lesson', infographics: 'infographic' };
+  function collection(kind) { return kind === 'sets' ? cat.sets : kind === 'lessons' ? cat.lessons : cat.infographics; }
+  function onRows(e) {
     var b = e.target.closest('button[data-a]'); if (!b) return;
-    var tr = b.closest('tr'), id = tr.getAttribute('data-id'), a = b.getAttribute('data-a');
-    var s = sets.filter(function (x) { return x.id === id; })[0];
-    if (a === 'edit') { editing = id; renderRows(); }
-    else if (a === 'cancel') { editing = ''; renderRows(); }
+    var tr = b.closest('tr'), kind = tr.getAttribute('data-kind'), id = tr.getAttribute('data-id'), a = b.getAttribute('data-a');
+    var item = collection(kind).filter(function (x) { return x.id === id; })[0];
+    if (a === 'edit') { editing = { kind: kind, id: id }; render(); }
+    else if (a === 'cancel') { editing = null; render(); }
+    else if (a === 'replace') { replaceTarget = { kind: kind, id: id }; $('replaceFile').click(); }
     else if (a === 'save') {
-      var title = tr.querySelector('.et').value, date = tr.querySelector('.ed').value;
+      var v = function (c) { var el = tr.querySelector(c); return el ? el.value : ''; }, req;
+      if (kind === 'sets') req = api('PUT', '/api/admin/sets/' + encodeURIComponent(id), { title: v('.e-title'), date: v('.e-date'), season: v('.e-season'), lessonId: v('.e-lesson') });
+      else {
+        var fd = new FormData(); fd.append('title', v('.e-title')); fd.append('season', v('.e-season'));
+        if (kind === 'lessons') { fd.append('number', v('.e-number')); fd.append('date', v('.e-date')); } else fd.append('lessonId', v('.e-lesson'));
+        req = api('PUT', '/api/admin/' + kind + '/' + encodeURIComponent(id), fd);
+      }
       b.disabled = true;
-      api('PUT', '/api/admin/sets/' + encodeURIComponent(id), { title: title, date: date })
-        .then(function () { editing = ''; note('Saved.', 'good'); return load(); })
-        .catch(function (err) { note(err.message, 'err'); b.disabled = false; });
+      req.then(function () { editing = null; note('Saved.', 'good'); return load(); }).catch(function (err) { note(err.message, 'err'); b.disabled = false; });
     } else if (a === 'del') {
-      if (!window.confirm('Delete “' + s.title + '” (' + fmtDate(s.date) + ')? Students will no longer see these boards.')) return;
-      api('DELETE', '/api/admin/sets/' + encodeURIComponent(id))
-        .then(function () { note('Deleted “' + s.title + '”.', 'good'); return load(); })
-        .catch(function (err) { note(err.message, 'err'); });
+      var msg = 'Delete “' + item.title + '”? ';
+      if (kind === 'lessons') {
+        var ni = cat.infographics.filter(function (i) { return i.lessonId === id; }).length, nb = cat.sets.filter(function (s) { return s.lessonId === id; }).length;
+        if (ni || nb) msg += 'Its ' + ni + ' infographic(s) and ' + nb + ' board set(s) will stay, but become unlinked. ';
+      }
+      if (!window.confirm(msg + 'This cannot be undone.')) return;
+      api('DELETE', '/api/admin/' + kind + '/' + encodeURIComponent(id)).then(function () { note('Deleted “' + item.title + '”.', 'good'); return load(); }).catch(function (err) { note(err.message, 'err'); });
     }
+  }
+  ['sets-rows', 'lessons-rows', 'infographics-rows'].forEach(function (id) {
+    $(id).addEventListener('click', onRows);
+    $(id).addEventListener('change', function (e) {
+      if (e.target.classList.contains('e-season') && e.target.value === '__new') { var cur = e.target.getAttribute('data-prev') || cat.currentSeason; var s = newSeason(e.target, cur); editing && render(); if (editing) { var r = $(id).querySelector('.e-season'); if (r) r.value = s; } }
+    });
+  });
+  $('replaceFile').addEventListener('change', function (e) {
+    var f = e.target.files[0]; e.target.value = ''; if (!f || !replaceTarget) return;
+    var fd = new FormData(); fd.append('file', f);
+    api('PUT', '/api/admin/' + replaceTarget.kind + '/' + encodeURIComponent(replaceTarget.id), fd)
+      .then(function () { note('File replaced.', 'good'); return load(); }).catch(function (err) { note(err.message, 'err'); });
   });
 
-  /* choosing a file */
+  /* ------------------------------------------------ boards: add one set */
   $('pbnLabel').addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('pbn').click(); } });
   $('pbn').addEventListener('change', function (e) {
-    var f = e.target.files[0]; pending = null; $('add').disabled = true;
+    var f = e.target.files[0]; pbn = null; $('add').disabled = true;
     if (!f) { $('pbnInfo').textContent = 'No file chosen.'; return; }
     var rd = new FileReader();
     rd.onload = function () {
-      var t = String(rd.result), n = countBoards(t);
+      var t = String(rd.result), n = (t.match(/^\s*\[Deal\s+"/gm) || []).length;
       if (!n) { $('pbnInfo').textContent = 'No boards found in “' + f.name + '”. Is it a PBN file?'; return; }
-      pending = { text: t, name: f.name };
-      $('pbnInfo').textContent = '“' + f.name + '”: ' + n + ' board' + (n === 1 ? '' : 's') + ' found.';
-      $('add').disabled = false;
+      pbn = t; $('pbnInfo').textContent = '“' + f.name + '”: ' + n + ' board' + (n === 1 ? '' : 's') + ' found.'; $('add').disabled = false;
     };
     rd.onerror = function () { $('pbnInfo').textContent = 'That file could not be read.'; };
     rd.readAsText(f);
   });
-
+  $('date').addEventListener('change', function () { var s = seasonOf($('date').value); if (s) { if (allSeasons().indexOf(s) < 0) extra.push(s); $('bSeason').innerHTML = seasonSelect('x', s).replace(/^<select[^>]*>|<\/select>$/g, ''); } });
+  $('bSeason').addEventListener('change', function () { if ($('bSeason').value === '__new') { var s = newSeason($('bSeason'), cat.currentSeason); $('bSeason').innerHTML = seasonSelect('x', s).replace(/^<select[^>]*>|<\/select>$/g, ''); } });
   $('addForm').addEventListener('submit', function (e) {
-    e.preventDefault(); if (!pending) return;
-    var title = $('title').value, date = $('date').value;
+    e.preventDefault(); if (!pbn) return;
     $('add').disabled = true;
-    api('POST', '/api/admin/sets', { title: title, date: date, pbn: pending.text }).then(function (j) {
+    api('POST', '/api/admin/sets', { title: $('title').value, date: $('date').value, pbn: pbn, season: $('bSeason').value, lessonId: $('bLesson').value }).then(function (j) {
       note('Added “' + j.set.title + '” with ' + j.set.boards + ' boards.', 'good');
-      pending = null; $('addForm').reset(); $('date').value = today(); $('pbnInfo').textContent = 'No file chosen.';
-      return load();
-    }).catch(function (err) { note(err.message, 'err'); $('add').disabled = !pending; });
+      pbn = null; $('addForm').reset(); $('date').value = today(); $('pbnInfo').textContent = 'No file chosen.'; return load();
+    }).catch(function (err) { note(err.message, 'err'); $('add').disabled = !pbn; });
   });
 
+  /* ------------------------------------------------ lessons and infographics: add one or many PDFs */
+  function guess(name) {
+    var base = name.replace(/\.pdf$/i, '').replace(/[_]+/g, ' ').trim();
+    var m = /^(?:lesson[\s._-]*)?(\d{1,3})[\s._:-]+(.+)$/i.exec(base) || /^lesson[\s._-]*(\d{1,3})\s*$/i.exec(base);
+    return m ? { number: m[1], title: (m[2] || base).trim() } : { number: '', title: base };
+  }
+  function addFiles(kind, files) {
+    Array.prototype.forEach.call(files, function (f) {
+      var g = guess(f.name), it = { file: f, title: g.title, number: g.number, date: '', season: cat.currentSeason, lessonId: '', status: '' };
+      if (kind === 'infographics' && g.number) {
+        var hit = cat.lessons.filter(function (l) { return String(l.number) === g.number && l.season === it.season; });
+        if (hit.length === 1) it.lessonId = hit[0].id;
+      }
+      queues[kind].push(it);
+    });
+    renderQueue(kind);
+  }
+  function renderQueue(kind) {
+    var q = queues[kind], el = $(kind + '-queue');
+    if (!q.length) { el.innerHTML = ''; return; }
+    var head = kind === 'lessons' ? '<th>File</th><th>No.</th><th>Title</th><th>Date (optional)</th><th>Season</th><th></th>' : '<th>File</th><th>Title</th><th>Lesson</th><th>Season</th><th></th>';
+    el.innerHTML = '<table><thead><tr>' + head + '</tr></thead><tbody>' + q.map(function (it, i) {
+      var st = '<span class="st ' + (it.err ? 'err' : it.done ? 'ok' : '') + '">' + esc(it.status) + '</span>';
+      var rm = it.done ? '' : '<button class="btn small" type="button" data-rm="' + i + '">Remove</button>';
+      var fl = '<td class="muted">' + esc(it.file.name) + '<br>' + size(it.file.size) + '</td>';
+      if (kind === 'lessons') {
+        return '<tr data-i="' + i + '">' + fl + '<td><input type="text" data-f="number" maxlength="10" value="' + esc(it.number) + '" style="width:70px"></td><td><input type="text" data-f="title" maxlength="100" value="' + esc(it.title) + '"></td>' +
+          '<td><input type="date" data-f="date" value="' + esc(it.date) + '"></td><td>' + seasonSelect('q-season', it.season) + '</td><td>' + rm + ' ' + st + '</td></tr>';
+      }
+      return '<tr data-i="' + i + '">' + fl + '<td><input type="text" data-f="title" maxlength="100" value="' + esc(it.title) + '"></td><td>' + lessonSelect('q-lesson', it.lessonId) + '</td><td>' + seasonSelect('q-season', it.season) + '</td><td>' + rm + ' ' + st + '</td></tr>';
+    }).join('') + '</tbody></table><div style="margin-top:10px"><button class="btn primary" type="button" data-go="' + kind + '">Upload ' + q.filter(function (x) { return !x.done; }).length + ' file(s)</button> <button class="btn" type="button" data-clear="' + kind + '">Clear list</button></div>';
+  }
+  ['lessons', 'infographics'].forEach(function (kind) {
+    $(kind + '-files').addEventListener('change', function (e) { addFiles(kind, e.target.files); e.target.value = ''; });
+    var el = $(kind + '-queue');
+    el.addEventListener('input', function (e) {
+      var tr = e.target.closest('tr[data-i]'), f = e.target.getAttribute('data-f'); if (!tr || !f) return;
+      var it = queues[kind][+tr.getAttribute('data-i')]; it[f] = e.target.value;
+    });
+    el.addEventListener('change', function (e) {
+      var tr = e.target.closest('tr[data-i]'); if (!tr) return;
+      var it = queues[kind][+tr.getAttribute('data-i')];
+      if (e.target.classList.contains('q-season')) { if (e.target.value === '__new') it.season = newSeason(e.target, it.season); else it.season = e.target.value; renderQueue(kind); }
+      else if (e.target.classList.contains('q-lesson')) it.lessonId = e.target.value;
+      else if (e.target.getAttribute('data-f') === 'date' && !it.seasonTouched) { var s = seasonOf(it.date); if (s) { if (allSeasons().indexOf(s) < 0) extra.push(s); it.season = s; renderQueue(kind); } }
+    });
+    el.addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      if (b.hasAttribute('data-rm')) { queues[kind].splice(+b.getAttribute('data-rm'), 1); renderQueue(kind); }
+      else if (b.hasAttribute('data-clear')) { queues[kind] = []; renderQueue(kind); }
+      else if (b.hasAttribute('data-go')) uploadAll(kind);
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('label[data-pick]'), function (l) {
+    l.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $(l.getAttribute('data-pick')).click(); } });
+  });
+  function uploadAll(kind) {
+    var chain = Promise.resolve();
+    queues[kind].forEach(function (it) {
+      if (it.done) return;
+      chain = chain.then(function () {
+        it.status = 'Uploading…'; it.err = false; renderQueue(kind);
+        var fd = new FormData(); fd.append('file', it.file); fd.append('title', it.title); fd.append('season', it.season);
+        if (kind === 'lessons') { fd.append('number', it.number || ''); fd.append('date', it.date || ''); } else fd.append('lessonId', it.lessonId || '');
+        return api('POST', '/api/admin/' + kind, fd).then(function () { it.done = true; it.status = 'Uploaded'; }, function (e) { it.err = true; it.status = e.message; }).then(function () { renderQueue(kind); });
+      });
+    });
+    chain.then(function () {
+      var ok = queues[kind].filter(function (x) { return x.done; }).length, bad = queues[kind].length - ok;
+      queues[kind] = queues[kind].filter(function (x) { return !x.done; });
+      note(ok + ' uploaded' + (bad ? ', ' + bad + ' need attention (see the list).' : '.'), bad ? 'err' : 'good');
+      return load();
+    });
+  }
+
+  /* ------------------------------------------------ top bar */
+  $('tabs').addEventListener('click', function (e) { var b = e.target.closest('button[data-tab]'); if (b) { tab = b.getAttribute('data-tab'); editing = null; render(); } });
+  $('seasonFilter').addEventListener('change', function (e) { filter = e.target.value; render(); });
   $('signinForm').addEventListener('submit', function (e) { e.preventDefault(); pw = $('pw').value; $('pw').value = ''; signIn(true); });
   $('out').addEventListener('click', function () { signOut(); note('Signed out.'); });
 
