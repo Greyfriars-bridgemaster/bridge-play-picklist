@@ -1,4 +1,3 @@
-js
 // Shared helpers for the API. (Not a route: it has no onRequest handlers.)
 
 export function json(data, status = 200) {
