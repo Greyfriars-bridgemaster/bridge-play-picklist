@@ -1,4 +1,3 @@
-js
 // POST /api/admin/schedules  { title, rows }  - add a course schedule
 import { json, need, readIndex, writeIndex, slugify, uniqueId, checkTitle, checkRows, seasonOf, readBody } from '../../_lib/common.js';
 
