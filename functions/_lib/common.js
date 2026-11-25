@@ -1,3 +1,4 @@
+js
 // Shared helpers for the API. (Not a route: it has no onRequest handlers.)
 
 export function json(data, status = 200) {
@@ -90,3 +91,32 @@ export const lessonLabel = (l) => (l.number ? 'Lesson ' + l.number + ' – ' : '
 
 /* Adds the stable download address to each item. */
 export const withUrl = (kind, list) => list.map(i => ({ ...i, fileUrl: '/files/' + kind + '/' + i.id + '.pdf' }));
+
+/* ---- course schedules: a list of lessons with dates, modules and teachers (first names only) ---- */
+const clip = (v, n) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, n);
+
+/* Returns { rows, first, last, count } or { error }. A row with no lesson number is a note (e.g. "Christmas break"). */
+export function checkRows(rows) {
+  if (!Array.isArray(rows) || !rows.length) return { error: 'The schedule has no rows.' };
+  if (rows.length > 80) return { error: 'That is too many rows (80 at most).' };
+  const out = [];
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i] || {};
+    const row = { n: clip(r.n, 6), date: clip(r.date, 10), module: clip(r.module, 100), description: clip(r.description, 120), teacher: clip(r.teacher, 60) };
+    const where = 'Row ' + (i + 1) + ': ';
+    if (row.date && checkDate(row.date, false)) return { error: where + 'the date is not valid.' };
+    if (!row.module) return { error: where + 'please give the module (or the note text).' };
+    if (row.n && !row.date) return { error: where + 'a lesson needs a date.' };
+    out.push(row);
+  }
+  const dated = out.filter(r => r.n && r.date).map(r => r.date).sort();
+  if (!dated.length) return { error: 'The schedule needs at least one numbered lesson with a date.' };
+  return { rows: out, first: dated[0], last: dated[dated.length - 1], count: dated.length };
+}
+
+/* The course to show first: the earliest one whose last lesson has not yet passed, otherwise the most recent. */
+export function pickDefault(list, today) {
+  const byStart = list.slice().sort((a, b) => (a.first < b.first ? -1 : a.first > b.first ? 1 : 0));
+  return (byStart.find(s => s.last >= today) || byStart[byStart.length - 1] || {}).id || null;
+}
+export const londonToday = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
