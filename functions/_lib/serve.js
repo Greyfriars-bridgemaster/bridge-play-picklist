@@ -5,9 +5,16 @@ export function serveFile(binding, kind) {
   return async function onRequestGet({ env, params, request }) {
     const kv = env[binding];
     if (!kv) return new Response('Not set up', { status: 503 });
-    const id = String(params.name || '').replace(/\.pdf$/i, '');
+    const raw = String(params.name || '');
+    const wantsPicture = /\.jpe?g$/i.test(raw);
+    const id = raw.replace(/\.(pdf|jpe?g)$/i, '');
     const item = (await readIndex(kv)).find(s => s.id === id);
     if (!item) return new Response('Not found', { status: 404 });
+    if (wantsPicture) {
+      const pic = await kv.get('thumb:' + id, 'stream');
+      if (!pic) return new Response('Not found', { status: 404 });
+      return new Response(pic, { headers: { 'content-type': 'image/jpeg', 'cache-control': 'public, max-age=86400', 'x-content-type-options': 'nosniff' } });
+    }
     const body = await kv.get('file:' + id, 'stream');
     if (!body) return new Response('Not found', { status: 404 });
     const nice = (kind === 'lessons' ? lessonLabel(item) : item.title).replace(/[\\/:*?"<>|]+/g, ' ').trim() + '.pdf';
