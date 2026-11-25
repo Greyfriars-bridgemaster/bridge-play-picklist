@@ -88,8 +88,24 @@ export async function readForm(request) {
 
 export const lessonLabel = (l) => (l.number ? 'Lesson ' + l.number + ' – ' : '') + l.title;
 
-/* Adds the stable download address to each item. */
-export const withUrl = (kind, list) => list.map(i => ({ ...i, fileUrl: '/files/' + kind + '/' + i.id + '.pdf' }));
+/* Adds the stable download address to each item, and the address of its picture when it has one. */
+export const withUrl = (kind, list) => list.map(i => ({
+  ...i,
+  fileUrl: '/files/' + kind + '/' + i.id + '.pdf',
+  ...(i.thumb ? { thumbUrl: '/files/' + kind + '/' + i.id + '.jpg?v=' + i.thumb } : {})
+}));
+
+/* A picture of the first page, made by the admin page: a JPEG of at most 400 KB.
+   Returns null if none was sent, { error } if it is not usable, or { buf }. */
+export const THUMB_LIMIT = 400 * 1024;
+export async function readThumb(file) {
+  if (!file || typeof file === 'string' || !file.size) return null;
+  if (file.size > THUMB_LIMIT) return { error: 'That picture is too large.' };
+  const buf = await file.arrayBuffer();
+  const b = new Uint8Array(buf, 0, 3);
+  if (!(b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF)) return { error: 'That picture is not a JPEG.' };
+  return { buf };
+}
 
 /* ---- course schedules: a list of lessons with dates, modules and teachers (first names only) ---- */
 const clip = (v, n) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, n);
