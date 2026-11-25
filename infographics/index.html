@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Infographics – Greyfriars Bridge School</title>
+<meta name="description" content="Bite-sized one-page summaries of each bridge topic from the Greyfriars Bridge School.">
+<link rel="stylesheet" href="../fonts/fonts.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script src="../assets/site-config.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<div id="site-top"></div>
+<main id="main">
+  <h1>Infographics</h1>
+  <p class="lead">Bite-sized summaries of each topic. Each opens as a PDF, which you can read on screen or print and keep beside you at the table.</p>
+
+  <section class="card" aria-labelledby="g-h">
+    <h2 id="g-h">Infographics</h2>
+    <div class="pick" id="pick" hidden>
+      <label for="season">Season</label>
+      <select id="season"></select>
+    </div>
+    <div id="out" aria-live="polite"><p>Loading the infographics…</p></div>
+  </section>
+</main>
+<div id="site-footer"></div>
+<script src="../assets/site.js" data-root="../" data-here="infographics"></script>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  var data = null;
+  function show(season) {
+    var gs = data.infographics.filter(function (g) { return g.season === season; });
+    var num = function (g) { var l = data.lessons.filter(function (x) { return x.id === g.lessonId; })[0]; var n = l ? parseFloat(l.number) : NaN; return isNaN(n) ? 9999 : n; };
+    gs.sort(function (a, b) { return num(a) - num(b) || (a.title < b.title ? -1 : 1); });
+    if (!gs.length) { $('out').innerHTML = '<p>No infographics have been added for this season yet. Please check back soon.</p>'; return; }
+    $('out').innerHTML = '<ul class="list">' + gs.map(function (g) {
+      var l = data.lessons.filter(function (x) { return x.id === g.lessonId; })[0];
+      return '<li><div class="what"><b>' + esc(g.title) + '</b>' + (l ? '<span>From ' + (l.number ? 'Lesson ' + esc(l.number) + ': ' : '') + esc(l.title) + '</span>' : '') +
+        '</div><div class="links"><a class="btn" href="' + esc(g.fileUrl) + '">Open (PDF)</a><a class="btn alt" href="' + esc(g.fileUrl) + '?download=1">Download</a></div></li>';
+    }).join('') + '</ul>';
+  }
+  fetch('/api/catalogue', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
+    if (!j || !Array.isArray(j.lessons) || !Array.isArray(j.infographics)) throw new Error('bad');
+    data = j;
+    var seasons = j.seasons.filter(function (s) { return j.infographics.some(function (g) { return g.season === s; }); });
+    if (!seasons.length) { $('out').innerHTML = '<p>The infographics will appear here soon.</p>'; return; }
+    var sel = $('season'); sel.innerHTML = seasons.map(function (s) { return '<option>' + esc(s) + '</option>'; }).join('');
+    sel.value = seasons.indexOf(j.currentSeason) >= 0 ? j.currentSeason : seasons[0];
+    $('pick').hidden = seasons.length < 2;
+    sel.addEventListener('change', function () { show(sel.value); });
+    show(sel.value);
+  }).catch(function () { $('out').innerHTML = '<p>The infographics are not available just now. Please try again later.</p>'; });
+})();
+</script>
+</body>
+</html>

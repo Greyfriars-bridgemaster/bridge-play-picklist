@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Interactive features – Greyfriars Bridge School</title>
+<meta name="description" content="Interactive bridge practice from the Greyfriars Bridge School: replay the hands from the lessons, and the cue bidding game.">
+<link rel="stylesheet" href="../fonts/fonts.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script src="../assets/site-config.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<div id="site-top"></div>
+<main id="main">
+  <h1>Interactive features</h1>
+  <p class="lead">Practise at your own pace, on a computer, tablet or phone.</p>
+
+  <ul class="list">
+    <li>
+      <div class="what"><b>Play the Hand</b><span>Replay the hands from the lessons and other games. Play the cards one at a time, step back and try a different line.</span></div>
+      <div class="links"><a class="btn" href="../play/">Play the Hand</a></div>
+    </li>
+    <li>
+      <div class="what"><b>Cue bidding game</b><span>The interactive game from Lesson 15. It opens in a separate page.</span></div>
+      <div class="links"><a class="btn" id="cue" href="#">Play the cue bidding game</a></div>
+    </li>
+  </ul>
+  <p class="hint">More interactive features will be added here as the course goes on.</p>
+</main>
+<div id="site-footer"></div>
+<script src="../assets/site.js" data-root="../" data-here="interactive"></script>
+<script>
+(function () {
+  var u = (window.SITE || {}).cueGame, a = document.getElementById('cue');
+  if (u) a.href = u; else a.closest('li').hidden = true;
+})();
+</script>
+</body>
+</html>
