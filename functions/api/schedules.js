@@ -1,4 +1,3 @@
-js
 // GET /api/schedules  - every course schedule (public), oldest first.
 // { today, defaultId, schedules: [{ id, title, season, first, last, count, rows: [{ n, date, module, description, teacher }] }] }
 // defaultId is the schedule to show first: the earliest one whose last lesson has not passed (UK date).
