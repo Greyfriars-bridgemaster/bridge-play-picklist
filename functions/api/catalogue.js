@@ -15,7 +15,7 @@ export async function onRequestGet({ env }) {
   return json({
     currentSeason: now,
     seasons: Object.keys(seen).sort().reverse(),
-    ready: { boards: !!env.BOARDS, lessons: !!env.LESSONS, infographics: !!env.INFOGRAPHICS },
+    ready: { boards: !!env.BOARDS, lessons: !!env.LESSONS, infographics: !!env.INFOGRAPHICS, schedules: !!env.SCHEDULES },
     lessons: withUrl('lessons', lessons),
     infographics: withUrl('infographics', infographics),
     sets: boards
