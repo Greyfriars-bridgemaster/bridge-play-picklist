@@ -174,8 +174,9 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
       <section class="card">
         <h2>Infographics</h2>
         <p class="hint" id="infographics-empty" hidden>No infographics yet.</p>
+        <div id="pics-todo" class="msg" hidden style="margin-bottom:10px"><span id="pics-text"></span> <button class="btn small primary" id="pics-make" type="button">Make the pictures</button></div>
         <table id="infographics-tbl" hidden>
-          <thead><tr><th>Title</th><th>Lesson</th><th>Season</th><th>Size</th><th></th></tr></thead>
+          <thead><tr><th>Picture</th><th>Title</th><th>Lesson</th><th>Season</th><th>Size</th><th></th></tr></thead>
           <tbody id="infographics-rows"></tbody>
         </table>
       </section>
@@ -356,15 +357,18 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
     }).join('');
   }
   function renderInfographics() {
+    var missing = cat.infographics.filter(function (i) { return !i.thumbUrl; });
+    $('pics-todo').hidden = !missing.length;
+    $('pics-text').textContent = missing.length + ' of ' + cat.infographics.length + ' infographic' + (cat.infographics.length === 1 ? ' has' : 's have') + ' no picture yet, so students see a plain tile.';
     var list = cat.infographics.filter(inSeason).sort(function (a, b) { return a.title < b.title ? -1 : 1; });
     $('infographics-empty').hidden = list.length > 0; $('infographics-tbl').hidden = list.length === 0;
     $('infographics-rows').innerHTML = list.map(function (i) {
       if (isEd('infographics', i.id)) {
-        return '<tr data-kind="infographics" data-id="' + esc(i.id) + '"><td><input type="text" class="e-title" maxlength="100" value="' + esc(i.title) + '"></td>' +
+        return '<tr data-kind="infographics" data-id="' + esc(i.id) + '"><td></td><td><input type="text" class="e-title" maxlength="100" value="' + esc(i.title) + '"></td>' +
           '<td>' + lessonSelect('e-lesson', i.lessonId) + '</td><td>' + seasonSelect('e-season', i.season) + '</td><td>' + size(i.size) + '</td>' + editActs() + '</tr>';
       }
       var l = i.lessonId && lessonById(i.lessonId);
-      return '<tr data-kind="infographics" data-id="' + esc(i.id) + '"><td><b>' + esc(i.title) + '</b></td><td class="muted">' + (l ? esc(lessonLabel(l)) : '–') + '</td><td>' + esc(i.season) + '</td><td class="muted">' + size(i.size) + '</td>' +
+      return '<tr data-kind="infographics" data-id="' + esc(i.id) + '"><td>' + (i.thumbUrl ? '<img src="' + esc(i.thumbUrl) + '" alt="" width="72" height="48" style="display:block;border:1px solid var(--line);border-radius:4px">' : '<span class="muted">–</span>') + '</td><td><b>' + esc(i.title) + '</b></td><td class="muted">' + (l ? esc(lessonLabel(l)) : '–') + '</td><td>' + esc(i.season) + '</td><td class="muted">' + size(i.size) + '</td>' +
         acts('infographics', i.id, '<a class="btn small" href="' + esc(i.fileUrl) + '" target="_blank" rel="noopener">View</a><button class="btn small" data-a="replace" type="button">Replace file</button>') + '</tr>';
     }).join('');
   }
@@ -405,11 +409,29 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
       if (e.target.classList.contains('e-season') && e.target.value === '__new') { var cur = e.target.getAttribute('data-prev') || cat.currentSeason; var s = newSeason(e.target, cur); editing && render(); if (editing) { var r = $(id).querySelector('.e-season'); if (r) r.value = s; } }
     });
   });
+  $('pics-make').addEventListener('click', function () {
+    var todo = cat.infographics.filter(function (i) { return !i.thumbUrl; }), done = 0, failed = 0, btn = $('pics-make'); btn.disabled = true;
+    var chain = Promise.resolve();
+    todo.forEach(function (i) {
+      chain = chain.then(function () {
+        note('Making pictures: ' + (done + failed + 1) + ' of ' + todo.length + '…');
+        return fetch(i.fileUrl, { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('read'); return r.arrayBuffer(); }).then(makeThumb).then(function (blob) {
+          if (!blob) throw new Error('none');
+          var fd = new FormData(); fd.append('thumb', blob, 'picture.jpg');
+          return api('PUT', '/api/admin/infographics/' + encodeURIComponent(i.id), fd);
+        }).then(function () { done++; }, function () { failed++; });
+      });
+    });
+    chain.then(function () { btn.disabled = false; note(done + ' picture' + (done === 1 ? '' : 's') + ' made' + (failed ? ', ' + failed + ' could not be made.' : '.'), failed ? 'err' : 'good'); return load(); });
+  });
   $('replaceFile').addEventListener('change', function (e) {
     var f = e.target.files[0]; e.target.value = ''; if (!f || !replaceTarget) return;
-    var fd = new FormData(); fd.append('file', f);
-    api('PUT', '/api/admin/' + replaceTarget.kind + '/' + encodeURIComponent(replaceTarget.id), fd)
-      .then(function () { note('File replaced.', 'good'); return load(); }).catch(function (err) { note(err.message, 'err'); });
+    var fd = new FormData(); fd.append('file', f); var target = replaceTarget;
+    note('Replacing the file…');
+    (target.kind === 'infographics' ? thumbFor(f) : Promise.resolve(null)).then(function (blob) {
+      if (blob) fd.append('thumb', blob, 'picture.jpg');
+      return api('PUT', '/api/admin/' + target.kind + '/' + encodeURIComponent(target.id), fd);
+    }).then(function () { note('File replaced.', 'good'); return load(); }).catch(function (err) { note(err.message, 'err'); });
   });
 
   /* ------------------------------------------------ boards: add one set */
@@ -436,6 +458,32 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
       pbn = null; $('addForm').reset(); $('date').value = today(); $('pbnInfo').textContent = 'No file chosen.'; return load();
     }).catch(function (err) { note(err.message, 'err'); $('add').disabled = !pbn; });
   });
+
+  /* ------------------------------------------------ pictures of infographics (made here, from page 1 of the PDF) */
+  /* The picture is 864 x 576 (3:2). A tall page shows its top part; a wide page is fitted whole. Needs the two files in admin/vendor/. */
+  var pdfLib = null;
+  function loadPdfLib() {
+    if (!pdfLib) pdfLib = import('./vendor/pdf.min.mjs').then(function (m) { m.GlobalWorkerOptions.workerSrc = new URL('./vendor/pdf.worker.min.mjs', location.href).href; return m; });
+    return pdfLib;
+  }
+  function makeThumb(buf) {
+    return loadPdfLib().then(function (lib) {
+      var task = lib.getDocument({ data: new Uint8Array(buf) });
+      return task.promise.then(function (doc) {
+        return doc.getPage(1).then(function (page) {
+          var W = 864, H = 576, v1 = page.getViewport({ scale: 1 }), vp = page.getViewport({ scale: W / v1.width });
+          var c = document.createElement('canvas'); c.width = W; c.height = H;
+          var ctx = c.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+          var dy = vp.height < H ? Math.round((H - vp.height) / 2) : 0;
+          return page.render({ canvasContext: ctx, canvas: c, viewport: vp, transform: [1, 0, 0, 1, 0, dy] }).promise.then(function () {
+            return new Promise(function (ok) { c.toBlob(function (b) { ok(b); }, 'image/jpeg', 0.82); });
+          });
+        }).then(function (blob) { try { task.destroy(); } catch (e) { /* not important */ } return blob; });
+      });
+    });
+  }
+  /* Never stops an upload: if no picture can be made, the PDF is still saved and the site shows a plain tile. */
+  function thumbFor(file) { return file.arrayBuffer().then(makeThumb).catch(function (e) { if (window.console) console.warn('Picture not made:', e && e.message || e); return null; }); }
 
   /* ------------------------------------------------ lessons and infographics: add one or many PDFs */
   /* Reads a file name such as "BS 2026 Lesson 1 - 08Sep26 - Opening 1NT and responses weak (1).pdf"
@@ -476,6 +524,14 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
         if (hit.length === 1) it.lessonId = hit[0].id;
       }
       queues[kind].push(it);
+      if (kind === 'infographics') {
+        it.status = 'Making the picture…';
+        it.thumbP = thumbFor(f).then(function (blob) {
+          it.thumb = blob; it.thumbUrl = blob ? URL.createObjectURL(blob) : '';
+          if (!it.done && !it.err) it.status = blob ? '' : 'No picture could be made (the PDF will still upload).';
+          renderQueue(kind);
+        });
+      }
     });
     renderQueue(kind);
   }
@@ -486,7 +542,7 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
     el.innerHTML = '<table><thead><tr>' + head + '</tr></thead><tbody>' + q.map(function (it, i) {
       var st = '<span class="st ' + (it.err ? 'err' : it.done ? 'ok' : '') + '">' + esc(it.status) + '</span>';
       var rm = it.done ? '' : '<button class="btn small" type="button" data-rm="' + i + '">Remove</button>';
-      var fl = '<td class="muted">' + esc(it.file.name) + '<br>' + size(it.file.size) + '</td>';
+      var fl = '<td class="muted">' + (it.thumbUrl ? '<img src="' + it.thumbUrl + '" alt="" width="96" height="64" style="display:block;margin-bottom:4px;border:1px solid var(--line);border-radius:4px">' : '') + esc(it.file.name) + '<br>' + size(it.file.size) + '</td>';
       if (kind === 'lessons') {
         return '<tr data-i="' + i + '">' + fl + '<td><input type="text" data-f="number" maxlength="10" value="' + esc(it.number) + '" style="width:70px"></td><td><input type="text" data-f="title" maxlength="100" value="' + esc(it.title) + '"></td>' +
           '<td><input type="date" data-f="date" value="' + esc(it.date) + '"></td><td>' + seasonSelect('q-season', it.season) + '</td><td>' + rm + ' ' + st + '</td></tr>';
@@ -530,9 +586,10 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
     var chain = Promise.resolve();
     queues[kind].forEach(function (it) {
       if (it.done) return;
-      chain = chain.then(function () {
+      chain = chain.then(function () { return it.thumbP; }).then(function () {
         it.status = 'Uploading…'; it.err = false; renderQueue(kind);
         var fd = new FormData(); fd.append('file', it.file); fd.append('title', it.title); fd.append('season', it.season);
+        if (it.thumb) fd.append('thumb', it.thumb, 'picture.jpg');
         if (kind === 'lessons') { fd.append('number', it.number || ''); fd.append('date', it.date || ''); } else fd.append('lessonId', it.lessonId || '');
         return api('POST', '/api/admin/' + kind, fd).then(function () { it.done = true; it.status = 'Uploaded'; }, function (e) { it.err = true; it.status = e.message; }).then(function () { renderQueue(kind); });
       });
@@ -678,4 +735,3 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
 </script>
 </body>
 </html>
-
