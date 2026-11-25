@@ -36,9 +36,11 @@
   var data = null;
   function show(season) {
     var ls = data.lessons.filter(function (l) { return l.season === season; }).sort(function (a, b) {
+      var ad = a.date || '9999', bd = b.date || '9999';
+      if (ad !== bd) return ad < bd ? -1 : 1;
       var an = parseFloat(a.number), bn = parseFloat(b.number);
       if (!isNaN(an) && !isNaN(bn) && an !== bn) return an - bn;
-      return (a.date || '') < (b.date || '') ? -1 : (a.date || '') > (b.date || '') ? 1 : a.title < b.title ? -1 : 1;
+      return a.title < b.title ? -1 : a.title > b.title ? 1 : 0;
     });
     if (!ls.length) { $('out').innerHTML = '<p>No lessons have been added for this season yet. Please check back soon.</p>'; return; }
     $('out').innerHTML = '<ul class="list">' + ls.map(function (l) {
