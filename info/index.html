@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>General information – Greyfriars Bridge Club bridge school</title>
+<meta name="description" content="The Greyfriars Bridge Club bridge school: the lesson schedule, topics and teachers.">
+<link rel="stylesheet" href="../fonts/fonts.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script src="../assets/site-config.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<div id="site-top"></div>
+<main id="main">
+  <h1>Bridge school: general information</h1>
+
+  <section class="card">
+    <p class="lead">The Greyfriars Bridge Club bridge school runs weekly lessons through the autumn and spring, taught by volunteer teachers from the club. The schedule below shows each lesson's date, topic and teacher.</p>
+  </section>
+
+  <section class="card" aria-labelledby="sch-h">
+    <h2 id="sch-h">Lesson schedule</h2>
+    <div class="pick" id="pick" hidden>
+      <label for="course">Course</label>
+      <select id="course"></select>
+    </div>
+    <p class="dates" id="range"></p>
+    <div id="sched" aria-live="polite"><p>Loading the schedule…</p></div>
+  </section>
+
+  <section class="card joinbox" id="join" hidden>
+    <h2>Joining, or finding out more</h2>
+    <p>To join the bridge school, or to ask about the club, please use the contact details on the club's own website.</p>
+    <p><a class="btn" id="bw" href="#" target="_blank" rel="noopener">Go to the club website</a></p>
+    <p class="hint">This opens the club's BridgeWebs site, which is run separately and has its own privacy notice.</p>
+  </section>
+</main>
+<div id="site-footer"></div>
+<script src="../assets/site.js" data-root="../" data-here="info"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  var esc = function (s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+  function parts(iso) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? { y: +m[1], m: +m[2], d: +m[3] } : null; }
+  function nice(iso, long) { var p = parts(iso); if (!p) return ''; var wd = DAY[new Date(Date.UTC(p.y, p.m - 1, p.d)).getUTCDay()]; return (long ? wd + ' ' : '') + p.d + ' ' + MON[p.m - 1] + (long ? ' ' + p.y : ''); }
+  function longDate(iso) { var p = parts(iso); return p ? p.d + ' ' + MON[p.m - 1] + ' ' + p.y : ''; }
+
+  var bw = (window.SITE || {}).bridgewebs;
+  if (bw) { $('bw').href = bw; $('join').hidden = false; }
+
+  var data = null;
+  function show(id) {
+    var s = data.schedules.filter(function (x) { return x.id === id; })[0]; if (!s) return;
+    $('range').textContent = longDate(s.first) + ' to ' + longDate(s.last) + ', ' + s.count + ' lessons';
+    var nextDone = false, today = data.today;
+    var rows = s.rows.map(function (r) {
+      if (!r.n) return '<tr class="note"><td colspan="5">' + esc(r.module) + (r.date ? ' (' + esc(nice(r.date, true)) + ')' : '') + '</td></tr>';
+      var past = r.date < today, isNext = !past && !nextDone; if (isNext) nextDone = true;
+      return '<tr class="' + (past ? 'past' : '') + (isNext ? ' next' : '') + '"><td class="n">' + esc(r.n) + '</td><td class="when">' + esc(nice(r.date, true)) + (isNext ? '<span class="tag">Next</span>' : '') +
+        '</td><td class="mod">' + esc(r.module) + (r.description ? '<span class="sub">' + esc(r.description) + '</span>' : '') + '</td><td>' + esc(r.teacher) + '</td></tr>';
+    }).join('');
+    $('sched').innerHTML = '<table><thead><tr><th>No.</th><th>Date</th><th>Topic</th><th>Teacher</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+  fetch('/api/schedules', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
+    if (!j || !Array.isArray(j.schedules)) throw new Error('bad');
+    data = j;
+    if (!j.schedules.length) { $('sched').innerHTML = '<p>The schedule will appear here soon.</p>'; return; }
+    var sel = $('course');
+    sel.innerHTML = j.schedules.map(function (s) { return '<option value="' + esc(s.id) + '">' + esc(s.title) + '</option>'; }).join('');
+    sel.value = j.defaultId; $('pick').hidden = j.schedules.length < 2;
+    sel.addEventListener('change', function () { show(sel.value); });
+    show(j.defaultId);
+  }).catch(function () { $('sched').innerHTML = '<p>The schedule is not available just now. Please try again later.</p>'; });
+})();
+</script>
+</body>
+</html>

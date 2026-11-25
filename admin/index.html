@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>Greyfriars bridge – manage content</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../fonts/fonts.css">
 <style>
 :root {
   --bg: #F5F1E6; --surface: #FFFFFB; --panel: #FBF8EF; --ink: #26261F; --muted: #646355; --line: #D9D0B4;
@@ -98,6 +96,7 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
       <button type="button" data-tab="sets" aria-pressed="true">Boards</button>
       <button type="button" data-tab="lessons" aria-pressed="false">Lessons</button>
       <button type="button" data-tab="infographics" aria-pressed="false">Infographics</button>
+      <button type="button" data-tab="schedules" aria-pressed="false">Schedule</button>
       <span class="sp"></span>
       <label id="filterWrap" hidden><span class="muted">Show </span><select id="seasonFilter" aria-label="Season"></select></label>
     </div>
@@ -181,6 +180,50 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
         </table>
       </section>
     </div>
+
+    <!-- SCHEDULE -->
+    <div id="p-schedules" hidden style="display:grid;gap:14px">
+      <section class="card" id="schedules-setup" hidden>
+        <h2>The schedule is not switched on yet</h2>
+        <p class="hint">In Cloudflare, create a KV store named <b>greyfriars-schedules</b>, attach it to this project with the variable name <b>SCHEDULES</b>, then redeploy. The README has the steps.</p>
+      </section>
+      <section class="card" id="schedules-new">
+        <h2>Add a course schedule</h2>
+        <p class="hint">Fill in the pro forma (<a href="schedule-proforma.csv" download>pro forma CSV</a>, which opens in Excel), select the cells in Excel, copy, and paste them here. Or choose the saved CSV file. You can correct anything on the next screen before saving.</p>
+        <div class="form" style="margin-top:10px">
+          <label class="f"><span>Paste the table here (columns: Lesson, Date, Module, Description, Teacher)</span><textarea id="sch-paste" rows="5" spellcheck="false" style="width:100%;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font:15px var(--font-body);padding:8px"></textarea></label>
+          <div class="file">
+            <button class="btn primary" id="sch-read" type="button">Read the pasted table</button>
+            <label class="btn" for="sch-file" tabindex="0" data-pick="sch-file">Choose a CSV file</label>
+            <input type="file" id="sch-file" accept=".csv,.txt,.tsv,text/csv,text/plain">
+            <button class="btn" id="sch-blank" type="button">Start with an empty table</button>
+          </div>
+        </div>
+      </section>
+      <section class="card" id="sch-editor" hidden>
+        <h2 id="sch-edtitle">Check the schedule</h2>
+        <label class="f" style="max-width:360px"><span>Course name shown to students</span><input type="text" id="sch-name" maxlength="100" placeholder="e.g. Spring 2027"></label>
+        <p class="hint" style="margin:10px 0">Dates as day/month/year. Leave the Lesson number empty for a note such as “Easter break”. Give teachers' first names only.</p>
+        <table id="sch-tbl">
+          <thead><tr><th>No.</th><th>Date</th><th>Module</th><th>Description</th><th>Teacher</th><th></th></tr></thead>
+          <tbody id="sch-rows"></tbody>
+        </table>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn primary" id="sch-save" type="button">Save schedule</button>
+          <button class="btn" id="sch-addrow" type="button">Add a row</button>
+          <button class="btn" id="sch-cancel" type="button">Cancel</button>
+        </div>
+      </section>
+      <section class="card">
+        <h2>Schedules</h2>
+        <p class="hint" id="sch-empty" hidden>No schedules yet.</p>
+        <table id="sch-list" hidden>
+          <thead><tr><th>Course</th><th>Dates</th><th>Lessons</th><th></th></tr></thead>
+          <tbody id="sch-list-rows"></tbody>
+        </table>
+        <p class="hint" style="margin-top:10px">Students see the course whose last lesson has not yet passed; when it ends the next one is shown automatically. They can switch with a drop-down.</p>
+      </section>
+    </div>
   </div>
   <input type="file" id="replaceFile" accept=".pdf,application/pdf" hidden>
 </div>
@@ -229,8 +272,8 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
   }
   function load() {
     return fetch('/api/catalogue', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
-      cat = j; render();
-    }).catch(function () { note('The lists could not be loaded. Please try again.', 'err'); });
+      cat = j; return loadSchedules();
+    }).then(function () { render(); }).catch(function () { note('The lists could not be loaded. Please try again.', 'err'); });
   }
 
   /* ------------------------------------------------ seasons and links */
@@ -268,15 +311,15 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
   /* ------------------------------------------------ drawing */
   function render() {
     var seasons = allSeasons();
-    $('filterWrap').hidden = seasons.length < 2;
+    $('filterWrap').hidden = seasons.length < 2 || tab === 'schedules';
     $('seasonFilter').innerHTML = '<option value="">All seasons</option>' + seasons.map(function (s) { return '<option' + (s === filter ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('');
     Array.prototype.forEach.call($('tabs').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-tab') === tab)); });
-    ['sets', 'lessons', 'infographics'].forEach(function (t) { $('p-' + t).hidden = t !== tab; });
+    ['sets', 'lessons', 'infographics', 'schedules'].forEach(function (t) { $('p-' + t).hidden = t !== tab; });
     $('bSeason').innerHTML = seasonSelect('x', $('bSeason').value && seasons.indexOf($('bSeason').value) >= 0 ? $('bSeason').value : (seasonOf($('date').value) || cat.currentSeason)).replace(/^<select[^>]*>|<\/select>$/g, '');
     $('bLesson').innerHTML = lessonSelect('x', $('bLesson').value).replace(/^<select[^>]*>|<\/select>$/g, '');
     $('lessons-setup').hidden = cat.ready.lessons; $('lessons-new').hidden = !cat.ready.lessons;
     $('infographics-setup').hidden = cat.ready.infographics; $('infographics-new').hidden = !cat.ready.infographics;
-    renderSets(); renderLessons(); renderInfographics(); renderQueue('lessons'); renderQueue('infographics');
+    renderSets(); renderLessons(); renderInfographics(); renderSchedules(); renderQueue('lessons'); renderQueue('infographics');
   }
   function isEd(kind, id) { return editing && editing.kind === kind && editing.id === id; }
   function acts(kind, id, extraBtn) {
@@ -468,6 +511,127 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
       return load();
     });
   }
+
+
+  /* ------------------------------------------------ course schedules */
+  var sch = [], ed = null, pad = function (n) { return String(n).padStart(2, '0'); };
+  function loadSchedules() {
+    if (!cat.ready.schedules) { sch = []; return Promise.resolve(); }
+    return fetch('/api/schedules', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) { sch = j.schedules || []; }, function () { sch = []; });
+  }
+  function isoOk(s) { return /^\d{4}-\d{2}-\d{2}$/.test(s || ''); }
+  function isoToUk(iso) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? m[3] + '/' + m[2] + '/' + m[1] : (iso || ''); }
+  var MON = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+  function mk(y, mo, d, raw) { var t = new Date(Date.UTC(y, mo - 1, d)); return (t.getUTCFullYear() === y && t.getUTCMonth() === mo - 1 && t.getUTCDate() === d) ? y + '-' + pad(mo) + '-' + pad(d) : raw; }
+  /* Understands 8/9/2026, 08/09/26, 2026-09-08, "8 Sep 2026", "Tue 8th September 2026". Returns YYYY-MM-DD, or the text unchanged if it cannot be read. */
+  function normDate(s) {
+    s = String(s || '').trim(); if (!s) return ''; var m;
+    if ((m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s))) return mk(+m[1], +m[2], +m[3], s);
+    if ((m = /^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2}|\d{4})$/.exec(s))) { var y = +m[3]; if (y < 100) y += 2000; return mk(y, +m[2], +m[1], s); }
+    if ((m = /^(?:[A-Za-z]+,?\s+)?(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)\.?,?\s+(\d{4})$/.exec(s))) { var mo = MON[m[2].slice(0, 3).toLowerCase()]; if (mo) return mk(+m[3], mo, +m[1], s); }
+    return s;
+  }
+  function parseDelimited(text, d) {
+    var rows = [], row = [], cell = '', q = false, i, c;
+    for (i = 0; i < text.length; i++) {
+      c = text.charAt(i);
+      if (q) { if (c === '"') { if (text.charAt(i + 1) === '"') { cell += '"'; i++; } else q = false; } else cell += c; }
+      else if (c === '"') q = true;
+      else if (c === d) { row.push(cell); cell = ''; }
+      else if (c === '\n' || c === '\r') { if (c === '\r' && text.charAt(i + 1) === '\n') i++; row.push(cell); cell = ''; rows.push(row); row = []; }
+      else cell += c;
+    }
+    if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+    return rows;
+  }
+  /* Turns pasted Excel cells, or a CSV file, into schedule rows. */
+  function parseSchedule(text) {
+    text = String(text || '').replace(/^﻿/, '');
+    var first = (text.split(/\r?\n/).filter(function (l) { return l.trim(); })[0]) || '';
+    var delim = first.indexOf('\t') >= 0 ? '\t' : (first.split(';').length > first.split(',').length ? ';' : ',');
+    var grid = parseDelimited(text, delim).filter(function (r) { return r.some(function (c) { return String(c).trim(); }); });
+    if (!grid.length) return [];
+    var map = { n: 0, date: 1, module: 2, description: 3, teacher: 4 };
+    var h = grid[0].map(function (c) { return String(c).trim().toLowerCase(); });
+    if (h.indexOf('date') >= 0) {
+      grid.shift(); map = { n: -1, date: -1, module: -1, description: -1, teacher: -1 };
+      h.forEach(function (c, i) {
+        if (/^(lesson|no\b|number|#)/.test(c)) map.n = i; else if (c === 'date') map.date = i;
+        else if (/^(module|topic|subject)/.test(c)) map.module = i; else if (/^desc/.test(c)) map.description = i; else if (/^(teacher|tutor)/.test(c)) map.teacher = i;
+      });
+    } else if (isoOk(normDate(grid[0][0]))) map = { n: -1, date: 0, module: 1, description: 2, teacher: 3 };
+    return grid.map(function (r) {
+      var g = function (i) { return i >= 0 ? String(r[i] == null ? '' : r[i]).trim() : ''; };
+      var row = { n: g(map.n).replace(/^lesson\s*/i, '').replace(/\.$/, ''), date: isoToUk(normDate(g(map.date))), module: g(map.module), description: g(map.description), teacher: g(map.teacher) };
+      if (!row.module && !row.n && !row.date) row.module = r.map(function (c) { return String(c || '').trim(); }).filter(Boolean)[0] || '';
+      return row;
+    });
+  }
+  function openEditor(id, title, rows) {
+    ed = { id: id, rows: rows.length ? rows : [{ n: '', date: '', module: '', description: '', teacher: '' }] };
+    $('sch-name').value = title || ''; $('sch-edtitle').textContent = id ? 'Edit the schedule' : 'Check the schedule';
+    renderEditor(); $('sch-editor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function bad(r) { return r.date && !isoOk(normDate(r.date)); }
+  function renderEditor() {
+    $('sch-editor').hidden = !ed; if (!ed) return;
+    $('sch-rows').innerHTML = ed.rows.map(function (r, i) {
+      var inp = function (f, w, extra) { return '<td><input type="text" data-f="' + f + '" value="' + esc(r[f]) + '" style="' + (w ? 'width:' + w + ';' : '') + '"' + (extra || '') + '></td>'; };
+      return '<tr data-i="' + i + '">' + inp('n', '60px', ' maxlength="6" aria-label="Lesson number"') + inp('date', bad(r) ? '120px;border-color:var(--red)' : '120px', ' placeholder="dd/mm/yyyy" aria-label="Date"') +
+        inp('module', '', ' maxlength="100" aria-label="Module"') + inp('description', '', ' maxlength="120" aria-label="Description"') + inp('teacher', '110px', ' maxlength="60" aria-label="Teacher"') +
+        '<td class="act"><button class="btn small" type="button" data-rm="' + i + '" aria-label="Remove row">✕</button></td></tr>';
+    }).join('');
+  }
+  function renderSchedules() {
+    $('schedules-setup').hidden = cat.ready.schedules; $('schedules-new').hidden = !cat.ready.schedules;
+    $('sch-empty').hidden = sch.length > 0; $('sch-list').hidden = sch.length === 0;
+    $('sch-list-rows').innerHTML = sch.map(function (s) {
+      return '<tr data-id="' + esc(s.id) + '"><td><b>' + esc(s.title) + '</b></td><td>' + esc(fmtDate(s.first)) + ' – ' + esc(fmtDate(s.last)) + '</td><td>' + s.count + '</td>' +
+        '<td class="act"><button class="btn small" data-a="edit" type="button">Edit</button><button class="btn small danger" data-a="del" type="button">Delete</button></td></tr>';
+    }).join('');
+  }
+  $('sch-read').addEventListener('click', function () {
+    var rows = parseSchedule($('sch-paste').value);
+    if (!rows.length) { note('Nothing to read yet. Paste the cells from Excel into the box first.', 'err'); return; }
+    note(''); openEditor(null, '', rows); $('sch-paste').value = '';
+  });
+  $('sch-blank').addEventListener('click', function () { note(''); openEditor(null, '', []); });
+  $('sch-file').addEventListener('change', function (e) {
+    var f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      var rows = parseSchedule(String(rd.result));
+      if (!rows.length) { note('That file looks empty.', 'err'); return; }
+      note(''); openEditor(null, f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' '), rows);
+    };
+    rd.onerror = function () { note('That file could not be read.', 'err'); };
+    rd.readAsText(f);
+  });
+  $('sch-rows').addEventListener('input', function (e) { var tr = e.target.closest('tr[data-i]'), f = e.target.getAttribute('data-f'); if (tr && f) ed.rows[+tr.getAttribute('data-i')][f] = e.target.value; });
+  $('sch-rows').addEventListener('change', function (e) {
+    var tr = e.target.closest('tr[data-i]'); if (!tr || e.target.getAttribute('data-f') !== 'date') return;
+    var r = ed.rows[+tr.getAttribute('data-i')], n = normDate(r.date); r.date = isoOk(n) ? isoToUk(n) : r.date; renderEditor();
+  });
+  $('sch-rows').addEventListener('click', function (e) { var b = e.target.closest('button[data-rm]'); if (b) { ed.rows.splice(+b.getAttribute('data-rm'), 1); renderEditor(); } });
+  $('sch-addrow').addEventListener('click', function () { ed.rows.push({ n: '', date: '', module: '', description: '', teacher: '' }); renderEditor(); });
+  $('sch-cancel').addEventListener('click', function () { ed = null; renderEditor(); note(''); });
+  $('sch-save').addEventListener('click', function () {
+    var title = $('sch-name').value.trim();
+    if (!title) { note('Please give the course a name, for example Spring 2027.', 'err'); $('sch-name').focus(); return; }
+    var rows = ed.rows.filter(function (r) { return r.n || r.date || r.module || r.description || r.teacher; });
+    for (var i = 0; i < rows.length; i++) { if (bad(rows[i])) { note('The date in row ' + (ed.rows.indexOf(rows[i]) + 1) + ' could not be read. Please write it as day/month/year.', 'err'); return; } }
+    var body = { title: title, rows: rows.map(function (r) { return { n: r.n, date: normDate(r.date), module: r.module, description: r.description, teacher: r.teacher }; }) };
+    $('sch-save').disabled = true;
+    api(ed.id ? 'PUT' : 'POST', '/api/admin/schedules' + (ed.id ? '/' + encodeURIComponent(ed.id) : ''), body).then(function (j) {
+      note('Saved “' + j.schedule.title + '”: ' + j.schedule.count + ' lessons, ' + fmtDate(j.schedule.first) + ' to ' + fmtDate(j.schedule.last) + '.', 'good'); ed = null; return load();
+    }).catch(function (err) { note(err.message, 'err'); }).then(function () { $('sch-save').disabled = false; });
+  });
+  $('sch-list-rows').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-a]'); if (!b) return;
+    var id = b.closest('tr').getAttribute('data-id'), s = sch.filter(function (x) { return x.id === id; })[0];
+    if (b.getAttribute('data-a') === 'edit') openEditor(s.id, s.title, s.rows.map(function (r) { return { n: r.n, date: isoToUk(r.date), module: r.module, description: r.description, teacher: r.teacher }; }));
+    else if (window.confirm('Delete “' + s.title + '”? This cannot be undone.')) api('DELETE', '/api/admin/schedules/' + encodeURIComponent(id)).then(function () { note('Deleted “' + s.title + '”.', 'good'); return load(); }).catch(function (err) { note(err.message, 'err'); });
+  });
 
   /* ------------------------------------------------ top bar */
   $('tabs').addEventListener('click', function (e) { var b = e.target.closest('button[data-tab]'); if (b) { tab = b.getAttribute('data-tab'); editing = null; render(); } });
