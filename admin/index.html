@@ -64,6 +64,18 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
 .muted { color: var(--muted); }
 .st { font-size: 14px; font-weight: 600; }
 .st.err { color: var(--red); } .st.ok { color: var(--ok); }
+tr.ln-row > td { border-top: 0; padding-top: 0; }
+.ln { display: grid; gap: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.ln textarea, .ln input { width: 100%; min-height: 40px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: 16px var(--font-body); padding: 6px 10px; }
+.ln textarea { min-height: 96px; resize: vertical; line-height: 1.4; }
+.ln textarea:focus-visible, .ln input:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.ln-link, .ln-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) 6.5em; gap: 8px; align-items: center; }
+.ln-cols { font-size: 13px; color: var(--muted); }
+.ln-link .btn { width: 100%; }
+.ln-msg:empty { display: none; }
+.ln-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.ln-bar .sp { flex: 1; }
+@media (max-width: 760px) { .ln-link, .ln-cols { grid-template-columns: 1fr; } .ln-cols { display: none; } .ln-link { border-top: 1px solid var(--line); padding-top: 8px; } }
 @media (max-width: 760px) {
   table, thead, tbody, tr, th, td { display: block; }
   thead { display: none; }
@@ -234,7 +246,7 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
   var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  var pw = '', cat = null, tab = 'sets', filter = '', editing = null, extra = [], pbn = null, replaceTarget = null;
+  var pw = '', cat = null, tab = 'sets', filter = '', editing = null, extra = [], pbn = null, replaceTarget = null, notesOpen = null;
   var queues = { lessons: [], infographics: [] };
   try { pw = sessionStorage.getItem('pth-admin') || ''; } catch (e) { pw = ''; }
 
@@ -351,11 +363,69 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
           '<td>' + seasonSelect('e-season', l.season) + '</td><td></td><td>' + size(l.size) + '</td>' + editActs() + '</tr>';
       }
       var ni = cat.infographics.filter(function (i) { return i.lessonId === l.id; }).length, nb = cat.sets.filter(function (s) { return s.lessonId === l.id; }).length;
-      var linked = [ni ? ni + ' infographic' + (ni > 1 ? 's' : '') : '', nb ? nb + ' board set' + (nb > 1 ? 's' : '') : ''].filter(Boolean).join(', ') || '–';
+      var nl = (l.links || []).length;
+      var linked = [ni ? ni + ' infographic' + (ni > 1 ? 's' : '') : '', nb ? nb + ' board set' + (nb > 1 ? 's' : '') : '', l.note ? 'note' : '', nl ? nl + ' link' + (nl > 1 ? 's' : '') : ''].filter(Boolean).join(', ') || '–';
       return '<tr data-kind="lessons" data-id="' + esc(l.id) + '"><td>' + esc(l.number) + '</td><td><b>' + esc(l.title) + '</b></td><td>' + esc(l.date ? fmtDate(l.date) : '') + '</td><td>' + esc(l.season) + '</td><td class="muted">' + esc(linked) + '</td><td class="muted">' + size(l.size) + '</td>' +
-        acts('lessons', l.id, '<a class="btn small" href="' + esc(l.fileUrl) + '" target="_blank" rel="noopener">View</a><button class="btn small" data-a="replace" type="button">Replace file</button>') + '</tr>';
+        acts('lessons', l.id, '<button class="btn small" data-ln="open" type="button" aria-expanded="' + (notesOpen === l.id) + '">Links and note</button><a class="btn small" href="' + esc(l.fileUrl) + '" target="_blank" rel="noopener">View</a><button class="btn small" data-a="replace" type="button">Replace file</button>') + '</tr>' +
+        (notesOpen === l.id ? notesPanel(l) : '');
     }).join('');
   }
+  /* ------------------------------------------------ lessons: optional note and links shown to students */
+  var LINK_MAX = 10;
+  function linkRow(k) {
+    k = k || { label: '', url: '' };
+    return '<div class="ln-link"><input type="text" class="ln-label" maxlength="100" placeholder="Text students see" aria-label="Text students see" value="' + esc(k.label) + '">' +
+      '<input type="url" class="ln-url" maxlength="500" placeholder="https://" aria-label="Web address" value="' + esc(k.url) + '">' +
+      '<button class="btn small danger" data-ln="rm" type="button">Remove</button></div>';
+  }
+  function notesPanel(l) {
+    var links = (l.links || []).length ? l.links : [null];
+    return '<tr class="ln-row" data-kind="lessons" data-id="' + esc(l.id) + '"><td colspan="7"><div class="ln">' +
+      '<label class="f"><span>Note for students (optional)</span><textarea class="ln-note" maxlength="1000" rows="4">' + esc(l.note || '') + '</textarea></label>' +
+      '<div><div class="ln-cols"><span>Link text students see</span><span>Web address (starts https://)</span><span></span></div>' +
+      '<div class="ln-links" style="display:grid;gap:8px;margin-top:4px">' + links.map(linkRow).join('') + '</div></div>' +
+      '<p class="hint">Leave the text empty and students see the site name instead. Links open in a new tab. Empty the note box, or remove every link, to take them off the Lessons page.</p>' +
+      '<p class="st err ln-msg" role="alert"></p>' +
+      '<div class="ln-bar"><button class="btn small" data-ln="add" type="button">Add a link</button><span class="sp"></span>' +
+      '<button class="btn small" data-ln="cancel" type="button">Cancel</button><button class="btn small primary" data-ln="save" type="button">Save</button></div>' +
+      '</div></td></tr>';
+  }
+  function onNotes(e) {
+    var b = e.target.closest('button[data-ln]'); if (!b) return;
+    var tr = b.closest('tr'), id = tr.getAttribute('data-id'), a = b.getAttribute('data-ln'), l = lessonById(id);
+    var box = $('lessons-rows').querySelector('tr.ln-row');
+    if (a === 'open') { notesOpen = notesOpen === id ? null : id; editing = null; render(); var t = $('lessons-rows').querySelector('.ln-note'); if (t) t.focus(); return; }
+    if (a === 'cancel') { notesOpen = null; render(); return; }
+    var list = box.querySelector('.ln-links');
+    var fail = function (msg) { note(msg, 'err'); box.querySelector('.ln-msg').textContent = msg; };
+    box.querySelector('.ln-msg').textContent = '';
+    if (a === 'add') {
+      if (list.querySelectorAll('.ln-link').length >= LINK_MAX) { fail('A lesson can have ' + LINK_MAX + ' links at most.'); return; }
+      list.insertAdjacentHTML('beforeend', linkRow()); list.lastElementChild.querySelector('.ln-label').focus(); return;
+    }
+    if (a === 'rm') {
+      b.closest('.ln-link').remove();
+      if (!list.querySelector('.ln-link')) list.insertAdjacentHTML('beforeend', linkRow());
+      return;
+    }
+    if (a === 'save') {
+      var links = [], bad = null;
+      Array.prototype.forEach.call(list.querySelectorAll('.ln-link'), function (row, i) {
+        var label = row.querySelector('.ln-label').value.trim(), url = row.querySelector('.ln-url').value.trim();
+        if (!label && !url) return;
+        if (!bad && !/^https?:\/\/\S+$/i.test(url)) bad = { el: row.querySelector('.ln-url'), msg: 'Link ' + (i + 1) + ': the web address should start with https:// (copy it from the browser\'s address bar).' };
+        links.push({ label: label, url: url });
+      });
+      if (bad) { fail(bad.msg); bad.el.focus(); return; }
+      var fd = new FormData(); fd.append('note', box.querySelector('.ln-note').value); fd.append('links', JSON.stringify(links));
+      b.disabled = true;
+      api('PUT', '/api/admin/lessons/' + encodeURIComponent(id), fd).then(function () {
+        notesOpen = null; note('Saved the note and links for “' + (l ? l.title : id) + '”.', 'good'); return load();
+      }).catch(function (err) { fail(err.message); b.disabled = false; });
+    }
+  }
+  $('lessons-rows').addEventListener('click', onNotes);
+
   function renderInfographics() {
     var missing = cat.infographics.filter(function (i) { return !i.thumbUrl; });
     $('pics-todo').hidden = !missing.length;
@@ -380,7 +450,7 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
     var b = e.target.closest('button[data-a]'); if (!b) return;
     var tr = b.closest('tr'), kind = tr.getAttribute('data-kind'), id = tr.getAttribute('data-id'), a = b.getAttribute('data-a');
     var item = collection(kind).filter(function (x) { return x.id === id; })[0];
-    if (a === 'edit') { editing = { kind: kind, id: id }; render(); }
+    if (a === 'edit') { editing = { kind: kind, id: id }; notesOpen = null; render(); }
     else if (a === 'cancel') { editing = null; render(); }
     else if (a === 'replace') { replaceTarget = { kind: kind, id: id }; $('replaceFile').click(); }
     else if (a === 'save') {
@@ -735,3 +805,4 @@ td input[type=text], td input[type=date], td select { min-height: 40px; }
 </script>
 </body>
 </html>
+
