@@ -8,6 +8,12 @@
 <link rel="stylesheet" href="../fonts/fonts.css">
 <link rel="stylesheet" href="../assets/site.css">
 <script src="../assets/site-config.js"></script>
+<style>
+.lnote { margin: 10px 0 0; padding: 8px 12px; border-left: 4px solid var(--green); background: var(--panel); white-space: pre-line; overflow-wrap: anywhere; }
+.llinks { margin: 8px 0 0; padding: 0 0 0 1.2em; }
+.llinks li { margin: 4px 0; padding: 0; border: 0; background: none; display: list-item; overflow-wrap: anywhere; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
 </head>
 <body>
 <a class="skip" href="#main">Skip to the content</a>
@@ -32,6 +38,16 @@
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  function host(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } }
+  function extras(l) {
+    var h = '';
+    if (l.note) h += '<p class="lnote">' + esc(l.note) + '</p>';
+    var ks = (l.links || []).filter(function (k) { return k && /^https?:\/\//i.test(k.url || ''); });
+    if (ks.length) h += '<ul class="llinks">' + ks.map(function (k) {
+      return '<li><a href="' + esc(k.url) + '" target="_blank" rel="noopener noreferrer">' + esc(k.label || host(k.url)) + '<span class="vh"> (opens in a new tab)</span></a></li>';
+    }).join('') + '</ul>';
+    return h;
+  }
   function longDate(iso) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? (+m[3]) + ' ' + MONTHS[+m[2] - 1] + ' ' + m[1] : ''; }
   var data = null;
   function show(season) {
@@ -47,7 +63,7 @@
       var igs = data.infographics.filter(function (g) { return g.lessonId === l.id; });
       return '<li><div class="what"><b>' + (l.number ? 'Lesson ' + esc(l.number) + ': ' : '') + esc(l.title) + '</b>' + (l.date ? '<span>' + esc(longDate(l.date)) + '</span>' : '') +
         (igs.length ? '<p class="rel">Infographic: ' + igs.map(function (g) { return '<a href="' + esc(g.fileUrl) + '">' + esc(g.title) + '</a>'; }).join(', ') + '</p>' : '') +
-        '</div><div class="links"><a class="btn" href="' + esc(l.fileUrl) + '">Open the lesson (PDF)</a><a class="btn alt" href="' + esc(l.fileUrl) + '?download=1">Download</a></div></li>';
+        extras(l) + '</div><div class="links"><a class="btn" href="' + esc(l.fileUrl) + '">Open the lesson (PDF)</a><a class="btn alt" href="' + esc(l.fileUrl) + '?download=1">Download</a></div></li>';
     }).join('') + '</ul>';
   }
   fetch('/api/catalogue', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
