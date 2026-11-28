@@ -1,5 +1,5 @@
-// POST /api/admin/infographics  (multipart form: file, title, lessonId?, season?)  - add an infographic PDF
-import { json, need, readIndex, writeIndex, slugify, uniqueId, checkTitle, checkSeason, currentSeason, readPdf, readForm } from '../../_lib/common.js';
+// POST /api/admin/infographics  (multipart form: file, title, lessonId?, season?, thumb?)  - add an infographic PDF (thumb: a JPEG picture of its first page)
+import { json, need, readIndex, writeIndex, slugify, uniqueId, checkTitle, checkSeason, currentSeason, readPdf, readThumb, readForm } from '../../_lib/common.js';
 
 export async function onRequestPost({ request, env }) {
   const miss = need(env, 'INFOGRAPHICS'); if (miss) return miss;
@@ -18,6 +18,8 @@ export async function onRequestPost({ request, env }) {
   const id = uniqueId(list, slugify(title));
   const item = { id, season, title, lessonId, size: pdf.size };
   await env.INFOGRAPHICS.put('file:' + id, pdf.buf);
+  const pic = await readThumb(form.get('thumb'));
+  if (pic && !pic.error) { await env.INFOGRAPHICS.put('thumb:' + id, pic.buf); item.thumb = Date.now(); }
   list.push(item);
   await writeIndex(env.INFOGRAPHICS, list);
   return json({ infographic: item }, 201);
